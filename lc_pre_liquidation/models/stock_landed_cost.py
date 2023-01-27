@@ -25,17 +25,6 @@ class StockLandedCost(models.Model):
     _description = 'Stock Landed Cost'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    def _default_account_journal_id(self):
-        lc_journal = self.env['account.journal']
-        if self.env.company.lc_journal_id:
-            lc_journal = self.env.company.lc_journal_id
-        else:
-            lc_journal = self.env['ir.property']._get(
-                "property_stock_journal",
-                "product.category"
-            )
-        return lc_journal
-
     name = fields.Char(
         'Name',
         default=lambda self: _('New'),
@@ -83,31 +72,16 @@ class StockLandedCost(models.Model):
         readonly=True,
         tracking=True
     )
-    account_move_id = fields.Many2one(
-        'account.move',
-        'Journal Entry',
-        copy=False,
-        readonly=True
-    )
-    account_journal_id = fields.Many2one(
-        'account.journal',
-        'Account Journal',
-        required=True,
-        states={'done': [('readonly', True)]},
-        default=lambda self: self._default_account_journal_id()
-    )
-    company_id = fields.Many2one(
-        'res.company',
-        string="Company",
-        related='account_journal_id.company_id'
-    )
-    stock_valuation_layer_ids = fields.One2many(
-        'stock.valuation.layer',
-        'stock_landed_cost_id'
-    )
     currency_id = fields.Many2one(
         'res.currency',
         default=lambda self: self.env.ref('base.USD')
+    )
+    company_id = fields.Many2one(
+        'res.company',
+        'Company',
+        default=lambda self: self.env.company,
+        required=True,
+        states={'done': [('readonly', True)]}
     )
     product_lines = fields.One2many(
         'pre.stock.landed.cost.product.lines',
@@ -195,75 +169,7 @@ class StockLandedCost(models.Model):
                 'You should maybe recompute the landed costs.'
             ))
 
-        for cost in self:
-            cost = cost.with_company(cost.company_id)
-            # move = self.env['account.move']
-            # move_vals = {
-            #     'journal_id': cost.account_journal_id.id,
-            #     'date': cost.date,
-            #     'ref': cost.name,
-            #     'line_ids': [],
-            #     'move_type': 'entry',
-            # }
-            # valuation_layer_ids = []
-            # cost_to_add_byproduct = defaultdict(lambda: 0.0)
-            # for line in cost.valuation_adjustment_lines.filtered(lambda line: line.move_id):
-            #     remaining_qty = sum(line.move_id.stock_valuation_layer_ids.mapped('remaining_qty'))
-            #     linked_layer = line.move_id.stock_valuation_layer_ids[:1]
-
-            #     # Prorate the value at what's still in stock
-            #     cost_to_add = (remaining_qty / line.move_id.product_qty) * line.additional_landed_cost
-            #     if not cost.company_id.currency_id.is_zero(cost_to_add):
-            #         valuation_layer = self.env['stock.valuation.layer'].create({
-            #             'value': cost_to_add,
-            #             'unit_cost': 0,
-            #             'quantity': 0,
-            #             'remaining_qty': 0,
-            #             'stock_valuation_layer_id': linked_layer.id,
-            #             'description': cost.name,
-            #             'stock_move_id': line.move_id.id,
-            #             'product_id': line.move_id.product_id.id,
-            #             'stock_landed_cost_id': cost.id,
-            #             'company_id': cost.company_id.id,
-            #         })
-            #         linked_layer.remaining_value += cost_to_add
-            #         valuation_layer_ids.append(valuation_layer.id)
-            #     # Update the AVCO
-            #     product = line.move_id.product_id
-            #     if product.cost_method == 'average':
-            #         cost_to_add_byproduct[product] += cost_to_add
-            #     # Products with manual inventory valuation are ignored because they do not need to create journal entries.
-            #     if product.valuation != "real_time":
-            #         continue
-            #     # `remaining_qty` is negative if the move is out and delivered proudcts that were not
-            #     # in stock.
-            #     qty_out = 0
-            #     if line.move_id._is_in():
-            #         qty_out = line.move_id.product_qty - remaining_qty
-            #     elif line.move_id._is_out():
-            #         qty_out = line.move_id.product_qty
-            #     move_vals['line_ids'] += line._create_accounting_entries(move, qty_out)
-
-            # # batch standard price computation avoid recompute quantity_svl at each iteration
-            # products = self.env['product.product'].browse(p.id for p in cost_to_add_byproduct.keys())
-            # for product in products:  # iterate on recordset to prefetch efficiently quantity_svl
-            #     if not float_is_zero(product.quantity_svl, precision_rounding=product.uom_id.rounding):
-            #         product.with_company(
-            #             cost.company_id
-            #         ).sudo().with_context(
-            #             disable_auto_svl=True
-            #         ).standard_price += cost_to_add_byproduct[product] / product.quantity_svl
-
-            # move_vals['stock_valuation_layer_ids'] = [(6, None, valuation_layer_ids)]
-            # # We will only create the accounting entry when there are defined lines (the lines will be those linked to products of real_time valuation category).
-            # cost_vals = {'state': 'done'}
-            # if move_vals.get("line_ids"):
-            #     move = move.create(move_vals)
-            #     cost_vals.update({'account_move_id': move.id})
-            # cost.write(cost_vals)
-            # if cost.account_move_id:
-            #     move._post()
-            cost.write({'state': 'done'})
+        self.write({'state': 'done'})
 
         return True
 
@@ -279,7 +185,7 @@ class StockLandedCost(models.Model):
             vals = {
                 'product_id': line.product_id.id,
                 'quantity': line.quantity,
-                'former_cost': 0.0,  # sum(line.stock_valuation_layer_ids.mapped('value')),
+                'former_cost': 0.0,
                 'weight': line.product_id.weight * line.quantity,
                 'volume': line.product_id.volume * line.quantity
             }
@@ -392,12 +298,6 @@ class StockLandedCost(models.Model):
 
         return True
 
-    def action_view_stock_valuation_layers(self):
-        self.ensure_one()
-        domain = [('id', 'in', self.stock_valuation_layer_ids.ids)]
-        action = self.env["ir.actions.actions"]._for_xml_id("stock_account.stock_valuation_layer_action")
-        return dict(action, domain=domain)
-
     def _check_can_validate(self):
         if any(cost.state != 'draft' for cost in self):
             raise UserError(_('Only draft landed costs can be validated'))
@@ -405,7 +305,7 @@ class StockLandedCost(models.Model):
         # TODO: check if the cost is already applied on the stock moves
         for cost in self:
             if not cost.product_lines:
-                raise UserError(_('Please add some cost lines.'))
+                raise UserError('Agregue algunas líneas de costo.')
 
     def _check_sum(self):
         prec_digits = self.env.company.currency_id.decimal_places
@@ -429,7 +329,7 @@ class StockLandedCost(models.Model):
     @api.depends('product_lines')
     def _compute_total_closeouts(self):
         for record in self:
-            record.total_closeouts = len(record.product_lines().ids)
+            record.total_closeouts = len(record.product_lines.ids)
 
     @api.depends('product_lines')
     def _compute_detail_metrics(self):
@@ -497,7 +397,7 @@ class StockLandedCost(models.Model):
 
     def action_view_closeouts_detail(self):
         action = self.env["ir.actions.actions"]._for_xml_id(
-            "lc_pre_liquidation.pre_liquidation_action_window"
+            "lc_pre_liquidation.pre_stock_landed_cost_product_lines_action_window"
         )
         return dict(
             action,

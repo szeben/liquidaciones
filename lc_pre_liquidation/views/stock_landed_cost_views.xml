@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <data>
-        <!-- STOCK.LANDED.COST -->
+
         <record id='view_stock_landed_cost_form' model='ir.ui.view'>
-            <field name="name">stock.landed.cost.form</field>
+            <field name="name">pre.stock.landed.cost.form</field>
             <field name="model">pre.stock.landed.cost</field>
             <field name="arch" type="xml">
                 <form string="Landed Costs">
-                    <field name="stock_valuation_layer_ids" invisible="1"/>
                     <header>
                         <button name="button_validate" string="Validar" states="draft" class="oe_highlight" type="object"/>
                         <button name="button_cancel" string="Cancelar" states="draft" type="object"/>
@@ -15,10 +14,14 @@
                     </header>
                     <sheet>
                         <div class="oe_button_box" name="button_box">
-                            <button string="Valuation" type="object"
-                                name="action_view_stock_valuation_layers"
-                                class="oe_stat_button" icon="fa-dollar" groups="stock.group_stock_manager"
-                                attrs="{'invisible': ['|' , ('state', 'not in', ['done']), ('stock_valuation_layer_ids', '=', [])]}"/>
+                            <button type="object" name="action_view_closeouts_detail" class="oe_stat_button" icon="fa-area-chart" groups="stock.group_stock_manager">
+                                <div class="o_field_widget o_stat_info">
+                                    <span class="o_stat_value">
+                                        <field name="total_closeouts"/>
+                                    </span>
+                                    <span class="o_stat_text">Detalle de Liquidación</span>
+                                </div>
+                            </button>
                         </div>
                         <div class="oe_title">
                             <label for="name" string="Landed Cost"/>
@@ -32,9 +35,7 @@
                             </group>
                             <group>
                                 <field name="currency_rate_usd"/>
-                                <!--<field name="account_journal_id"/>
-                                <field name="company_id" groups="base.group_multi_company"/>
-                                <field name="account_move_id" attrs="{'invisible': [('account_move_id', '=', False)]}"/> -->
+                                <!-- <field name="account_journal_id"/> -->
                             </group>
                         </group>
                         <notebook>
@@ -63,9 +64,7 @@
                                     <form string="Cost Lines">
                                         <group>
                                             <group>
-                                                <field name="product_id"
-                                                    domain="[('landed_cost_ok', '=', True)]"
-                                                    context="{'default_landed_cost_ok': True}"/>
+                                                <field name="product_id" domain="[('landed_cost_ok', '=', True)]" context="{'default_landed_cost_ok': True}"/>
                                                 <field name="price_unit"/>
                                                 <field name="currency_id" invisible="1"/>
                                             </group>
@@ -77,10 +76,8 @@
                                         <label for="name"/>
                                         <field name="name"/>
                                     </form>
-                                    <tree string="Cost Lines" editable="bottom">
-                                        <field name="product_id"
-                                            domain="[('landed_cost_ok', '=', True)]"
-                                            context="{'default_landed_cost_ok': True, 'default_detailed_type': 'service'}"/>
+                                    <tree string="Costes adicionales" editable="bottom">
+                                        <field name="product_id" domain="[('landed_cost_ok', '=', True)]" context="{'default_landed_cost_ok': True, 'default_detailed_type': 'service'}"/>
                                         <field name="product_id"/>
                                         <field name="name"/>
                                         <field name="account_id" options="{'no_create': True}"/>
@@ -95,7 +92,7 @@
                                     <button colspan="2" name="compute_landed_cost" string="Compute" type="object" class="oe_right btn-secondary" states='draft'/>
                                 </group>
                             </page>
-                            <page string="Valuation Adjustments" name="valuation_adjustments">
+                            <page string="Ajustes de valoración" name="valuation_adjustments">
                                 <field name="valuation_adjustment_lines">
                                     <form string="Valuation Adjustments">
                                         <group>
@@ -123,7 +120,7 @@
                                     </tree>
                                 </field>
                             </page>
-                            <!-- <page string="Información por producto" name="Información_por_producto">
+                            <page string="Información por producto" name="information_per_product">
                                 <field name="product_detail_ids">
                                     <form string="Lineas de información">
                                         <group>
@@ -146,7 +143,24 @@
                                         <field name="new_cost" widget="monetary" readonly="1"/>
                                     </tree>
                                 </field>
-                            </page> -->
+                            </page>
+                            <page string="Indicadores" name="indicators">
+                                <group>
+                                    <group>
+                                        <field name="total_closeouts" string="Cantidad de lineas de producto"/>
+                                        <field name="currency_rate_usd"/>
+                                        <field name="factor"/>
+                                    </group>
+                                    <group>
+                                        <field name="amount_total" string="Total de costos adicionales"/>
+                                        <field name="avg_margin"/>
+                                        <field name="median_margin"/>
+                                    </group>
+                                </group>
+                                <group>
+                                    <field name="metrics" widget="table_metrics" nolabel="1" readonly="1"/>
+                                </group>
+                            </page>
                         </notebook>
                     </sheet>
                     <div class="oe_chatter">
@@ -159,13 +173,12 @@
         </record>
 
         <record id='view_stock_landed_cost_tree' model='ir.ui.view'>
-            <field name="name">stock.landed.cost.tree</field>
+            <field name="name">pre.stock.landed.cost.tree</field>
             <field name="model">pre.stock.landed.cost</field>
             <field name="arch" type="xml">
                 <tree string="Landed Costs" decoration-info="state == 'draft'" decoration-muted="state == 'cancel'">
                     <field name="name" decoration-bf="1"/>
                     <field name="date"/>
-                    <field name="company_id" groups="base.group_multi_company"/>
                     <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state == 'draft'"/>
                     <field name="activity_exception_decoration" widget="activity_exception"/>
                 </tree>
@@ -173,7 +186,7 @@
         </record>
 
         <record id='view_stock_landed_cost_tree2' model='ir.ui.view'>
-            <field name="name">stock.landed.cost.tree</field>
+            <field name="name">pre.stock.landed.cost.tree</field>
             <field name="model">pre.stock.landed.cost</field>
             <field name="priority">1000</field>
             <field name="arch" type="xml">
@@ -183,20 +196,19 @@
                     <field name="currency_id" invisible="1"/>
                     <field name="amount_total" widget="monetary"/>
                     <field name="state"/>
-                    <field name="company_id" groups="base.group_multi_company"/>
                 </tree>
             </field>
         </record>
 
         <record id='stock_landed_cost_view_kanban' model='ir.ui.view'>
-            <field name="name">stock.landed.cost.kanban</field>
+            <field name="name">pre.stock.landed.cost.kanban</field>
             <field name="model">pre.stock.landed.cost</field>
             <field name="arch" type="xml">
                 <kanban class="o_kanban_mobile">
                     <field name="name"/>
                     <field name="date"/>
                     <field name="state"/>
-                    <field name="account_journal_id"/>
+                    <!-- <field name="account_journal_id"/> -->
                     <templates>
                         <t t-name="kanban-box">
                             <div class="oe_kanban_global_click">
@@ -210,10 +222,11 @@
                                         </span>
                                     </div>
                                     <div class="col-6">
-                                        <i class="fa fa-clock-o" title="Date" role="img" aria-label="Date"/><span t-esc="record.date.value"/>
+                                        <i class="fa fa-clock-o" title="Date" role="img" aria-label="Date"/>
+                                        <span t-esc="record.date.value"/>
                                     </div>
                                     <div class="col-6 text-right">
-                                        <field name="account_journal_id"/>
+                                        <!-- <field name="account_journal_id"/> -->
                                     </div>
                                 </div>
                             </div>
@@ -224,25 +237,20 @@
         </record>
 
         <record id="view_stock_landed_cost_search" model="ir.ui.view">
-            <field name="name">stock.landed.cost.search</field>
+            <field name="name">pre.stock.landed.cost.search</field>
             <field name="model">pre.stock.landed.cost</field>
             <field name="arch" type="xml">
                 <search string="Landed Costs">
                     <field name="name" string="Name"/>
-                    <field name="picking_ids" string="Picking"/>
                     <separator/>
                     <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
                     <filter string="Done" name="done" domain="[('state', '=', 'done')]"/>
                     <separator/>
                     <filter string="Date" name="date" date="date"/>
                     <separator/>
-                    <filter invisible="1" string="Late Activities" name="activities_overdue"
-                        domain="[('my_activity_date_deadline', '&lt;', context_today().strftime('%Y-%m-%d'))]"
-                        help="Show all records which has next action date is before today"/>
-                    <filter invisible="1" string="Today Activities" name="activities_today"
-                        domain="[('my_activity_date_deadline', '=', context_today().strftime('%Y-%m-%d'))]"/>
-                    <filter invisible="1" string="Future Activities" name="activities_upcoming_all"
-                        domain="[('my_activity_date_deadline', '&gt;', context_today().strftime('%Y-%m-%d'))]"/>
+                    <filter invisible="1" string="Late Activities" name="activities_overdue" domain="[('my_activity_date_deadline', '&lt;', context_today().strftime('%Y-%m-%d'))]" help="Show all records which has next action date is before today"/>
+                    <filter invisible="1" string="Today Activities" name="activities_today" domain="[('my_activity_date_deadline', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <filter invisible="1" string="Future Activities" name="activities_upcoming_all" domain="[('my_activity_date_deadline', '&gt;', context_today().strftime('%Y-%m-%d'))]"/>
                     <group expand="0" string="Group By">
                         <filter string="Status" name="status" context="{'group_by': 'state'}"/>
                         <filter string="Date" name="group_by_month" context="{'group_by': 'date'}"/>

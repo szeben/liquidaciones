@@ -32,10 +32,8 @@
         'security/ir.model.access.csv',
         'security/stock_landed_cost_security.xml',
         'data/stock_landed_cost_data.xml',
-        # 'views/account_move_views.xml',
         'views/stock_landed_cost_views.xml',
-        # 'views/stock_valuation_layer_views.xml',
-        'views/templates.xml',
+        'views/stock_landed_cost_detail_views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

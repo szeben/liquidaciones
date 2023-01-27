@@ -1,0 +1,92 @@
+<odoo>
+  <data>
+
+    <record id="view_pre_stock_landed_cost_product_lines_tree" model="ir.ui.view">
+      <field name="name">pre.stock.move.closeouts.detail.tree</field>
+      <field name="model">pre.stock.landed.cost.product.lines</field>
+      <field name="priority" eval="20"/>
+      <field name="arch" type="xml">
+
+        <tree multi_edit="1" sample="1" create="0" edit="1">
+          <field name="item"/>
+          <field name="quantity" string="Qty" readonly="1"/>
+          <field name="product_id" string="Descripción" readonly="1" optional="show"/>
+          <field name="price_unit" string="C/U US$" optional="show"/>
+          <field name="price_subtotal" sum="Total" optional="show"/>
+          <field name="price_unit_rd" optional="show"/>
+          <field name="amount_total_rd" sum="Total" optional="show"/>
+          <field name="factor" optional="show"/>
+          <field name="current_price_unit_rd" optional="show"/>
+          <field name="current_total_rd" sum="Total" optional="show"/>
+          <field name="current_price_unit_usd" optional="show"/>
+          <field name="current_total_usd" sum="Total" optional="show"/>
+          <field name="pvp_usd" optional="show"/>
+          <field name="pvp_rd" optional="show"/>
+          <field name="margin" optional="show"/>
+          <field name="profit_usd" sum="Total" optional="show"/>
+          <field name="profit_rd" sum="Total" optional="show"/>
+        </tree>
+
+      </field>
+    </record>
+
+
+    <record id="view_pre_stock_landed_cost_product_lines_form" model="ir.ui.view">
+      <field name="name">pre.stock.move.closeouts.detail.form</field>
+      <field name="model">pre.stock.landed.cost.product.lines</field>
+      <field name="priority" eval="20"/>
+      <field name="arch" type="xml">
+
+        <form create="0">
+          <sheet>
+            <group>
+              <group>
+                <field name="item"/>
+                <field name="quantity" string="Qty" readonly="1"/>
+                <field name="product_id" string="Descripción" readonly="1"/>
+                <field name="price_unit" string="C/U US$" readonly="1"/>
+                <field name="price_subtotal"/>
+                <field name="price_unit_rd"/>
+                <field name="amount_total_rd"/>
+                <field name="factor"/>
+                <field name="current_price_unit_rd"/>
+              </group>
+              <group>
+                <field name="current_total_rd"/>
+                <field name="current_price_unit_usd"/>
+                <field name="current_total_usd"/>
+                <field name="pvp_usd"/>
+                <field name="pvp_rd"/>
+                <field name="margin"/>
+                <field name="profit_usd"/>
+                <field name="profit_rd"/>
+              </group>
+            </group>
+          </sheet>
+        </form>
+
+      </field>
+    </record>
+
+    <record id="pre_stock_landed_cost_product_lines_action_window" model="ir.actions.act_window">
+      <field name="name">Detalle de Liquidación</field>
+      <field name="res_model">pre.stock.landed.cost.product.lines</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="pre_stock_landed_cost_product_lines_list_action_view" model="ir.actions.act_window.view">
+      <field eval="2" name="sequence"/>
+      <field name="view_mode">list</field>
+      <field name="view_id" ref="view_pre_stock_landed_cost_product_lines_tree"/>
+      <field name="act_window_id" ref="pre_stock_landed_cost_product_lines_action_window"/>
+    </record>
+
+    <record id="pre_stock_landed_cost_product_lines_form_action_view" model="ir.actions.act_window.view">
+      <field eval="2" name="sequence"/>
+      <field name="view_mode">form</field>
+      <field name="view_id" ref="view_pre_stock_landed_cost_product_lines_form"/>
+      <field name="act_window_id" ref="pre_stock_landed_cost_product_lines_action_window"/>
+    </record>
+
+  </data>
+</odoo>

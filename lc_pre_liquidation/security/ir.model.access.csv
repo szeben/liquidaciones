@@ -3,3 +3,4 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 "access_pre_stock_landed_cost_lines",pre.stock.landed.cost.lines,model_pre_stock_landed_cost_lines,"stock.group_stock_manager",1,1,1,1
 "access_pre_stock_valuation_adjustment_lines",pre.stock.valuation.adjustment.lines,"model_pre_stock_valuation_adjustment_lines","stock.group_stock_manager",1,1,1,1
 "access_pre_stock_landed_cost_product_lines",pre.stock.landed.cost.product.lines,model_pre_stock_landed_cost_product_lines,"stock.group_stock_manager",1,1,1,1
+"access_pre_stock_product_detail",pre.stock.product.detail,model_pre_stock_product_detail,"stock.group_stock_manager",1,1,1,1
