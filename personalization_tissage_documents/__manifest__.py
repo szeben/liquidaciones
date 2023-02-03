@@ -24,8 +24,10 @@
 
     # always loaded
     'data': [
-        'report/sale_action_report_saleorder_custom.xml',
-        'report/sale_report_templates_custom.xml'
+        'report/tissage_report_views.xml',
+        'report/sale_report_templates_custom.xml',
+        'report/report_invoice_custom.xml',
+        'report/report_deliveryslip_custom.xml'
     ],
     # only loaded in demonstration mode
     'demo': [

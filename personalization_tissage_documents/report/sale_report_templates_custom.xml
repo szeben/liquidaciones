@@ -15,53 +15,52 @@
                         <span t-field="doc.partner_id.vat" />
                     </p>
                 </t>
-                <t t-if="doc.partner_shipping_id == doc.partner_invoice_id
-                                        and doc.partner_invoice_id != doc.partner_id
-                                        or doc.partner_shipping_id != doc.partner_invoice_id">
-                    <t t-set="information_block">
-                        <strong t-if="doc.partner_shipping_id == doc.partner_invoice_id">Invoicing and Shipping Address:</strong>
-                        <strong t-if="doc.partner_shipping_id != doc.partner_invoice_id">Invoicing Address:</strong>
-                        <div t-field="doc.partner_invoice_id"
-                            t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}' />
-                        <t t-if="doc.partner_shipping_id != doc.partner_invoice_id">
-                            <strong>Shipping Address:</strong>
-                            <div t-field="doc.partner_shippglking_id"
-                                t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}' />
-                        </t>
+
+                <t t-if="not o" t-set="o" t-value="doc" />
+                <t t-if="not company">
+                    <!-- Multicompany -->
+                    <t t-if="company_id">
+                        <t t-set="company" t-value="company_id" />
+                    </t>
+                    <t t-elif="o and 'company_id' in o and o.company_id.sudo()">
+                        <t t-set="company" t-value="o.company_id.sudo()" />
+                    </t>
+                    <t t-else="else">
+                        <t t-set="company" t-value="res_company" />
                     </t>
                 </t>
 
-                <div class="header" style="margin-bottom: 10px;">
+                <div t-attf-class="header o_company_#{company.id}_layout" t-att-style="report_header_style" style="margin-bottom: 10px;">
                     <div class="row">
                         <div class="col-8">
                             <div>
-                                <img src='/personalization_tissage_documents/static/logo/tissage_logo.png' style="height: 130px; width: 520px; float: left; margin-top: 32px; margin-bottom: 20px" alt="Logo" />
+                                <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="height: 130px; width: 520px; float: left; margin-top: 32px; margin-bottom: 20px;" alt="Logo" />
                             </div>
                         </div>
-                        <div class="col-4" name="order_data" style="margin-top:30px; margin-botton:25px">
+                        <div class="col-4" name="order_data" style="margin-top:30px; margin-botton:25px;">
                             <h1 class="mt16">
 
                                 <t t-if="not (env.context.get('proforma', False) or is_pro_forma)">
-                                    <span t-if="doc.state not in ['draft','sent']" style="text-transform: uppercase; font-size:75%"> Pedido </span>
-                                    <span t-if="doc.state in ['draft','sent']" style="text-transform: uppercase; font-size:75%">Cotización </span>
+                                    <span t-if="doc.state not in ['draft','sent']" style="text-transform: uppercase; font-size:75%;"> Pedido </span>
+                                    <span t-if="doc.state in ['draft','sent']" style="text-transform: uppercase; font-size:75%;">Cotización </span>
                                 </t>
                                 <t t-if="env.context.get('proforma', False) or is_pro_forma">
                                     <div>
-                                        <span style="text-transform: uppercase; font-size:75%">Factura  </span>
+                                        <span style="text-transform: uppercase; font-size:75%;">Factura  </span>
                                     </div>
 
                                     <div>
-                                        <span style="text-transform: uppercase; font-size:75%">Pro-Forma </span>
-                                    </div>                             
+                                        <span style="text-transform: uppercase; font-size:75%;">Pro-Forma </span>
+                                    </div>
                                 </t>
                             </h1>
 
-                            <div t-if="doc.partner_id.vat">
+                            <div t-if="doc.state">
                                 <t t-esc="'Estado:'" />
                                 <span t-field="doc.state" />
                             </div>
 
-                            <div t-if="doc.partner_id.vat">
+                            <div t-if="doc.company_id.vat">
                                 <t t-esc="'R.N.C:'" />
                                 <span t-field="doc.company_id.vat" />
                             </div>
@@ -91,7 +90,7 @@
                     </div>
                 </div>
 
-                <div class="page" style="margin-top:40px">
+                <div class="page" style="margin-top:100px;">
                     <div class="oe_structure" />
                     <div class="row mt32 mb32" id="informations">
                         <div t-if="doc.partner_id" class="col-auto col-4 mw-100 mb-2">
@@ -122,12 +121,12 @@
                     <!-- Is there a discount on at least one line? -->
                     <t t-set="display_discount" t-value="any(l.discount for l in doc.order_line)" />
 
-                    <table class="table table-sm o_main_table" style="margin-top:20px">
+                    <table class="table table-sm o_main_table" style="margin-top:20px;">
                         <!-- In case we want to repeat the header, remove "display: table-row-group" -->
                         <thead style="display: table-row-group">
                             <tr>
                                 <th name="th_internal_reference" class="text-left">Referencia Interna</th>
-                                <th name="th_internal_reference" class="text-left">Producto</th>
+                                <th name="th_product" class="text-left">Producto</th>
                                 <th name="th_quantity" class="text-right">Cantidad</th>
                                 <th name="th_priceunit" class="text-right">Precio Unitario</th>
                                 <th name="th_discount" t-if="display_discount" class="text-right" groups="product.group_discount_per_so_line">
@@ -254,14 +253,14 @@
                                                 <strong>Monto Adeudado Total</strong>
                                             </td>
                                             <td class="text-right">
-                                                <span t-field="doc.amount_residual" />                            
+                                                <span t-field="doc.amount_residual" />
                                             </td>
                                         </tr>
-                                    </t> 
-                                    <t t-elif="len(doc.account_payment_ids) > 0"> 
+                                    </t>
+                                    <t t-elif="len(doc.account_payment_ids) > 0">
                                         <t t-foreach="doc.account_payment_ids" t-as="p">
-                                            <t t-if="p.state == 'posted'">                               
-                                                
+                                            <t t-if="p.state == 'posted'">
+
                                                 <tr>
                                                     <td>
                                                         <i class="oe_form_field text-right oe_payment_label">
@@ -273,70 +272,70 @@
                                                         <span t-esc="p.amount_company_currency_signed" t-options='{"widget": "monetary", "display_currency": p.currency_id}' />
                                                     </td>
                                                 </tr>
-                                    
+
                                             </t>
                                         </t>
-                                    
+
                                         <tr class="border-black">
                                             <td>
                                                 <strong>Monto Adeudado </strong>
                                             </td>
                                             <td class="text-right">
-                                                <span t-field="doc.amount_residual" />                            
+                                                <span t-field="doc.amount_residual" />
                                             </td>
                                         </tr>
-                                                       
+
                                     </t>
                                 </table>
                             </div>
                         </div>
                     </div>
 
-                    <div class="oe_structure" style="color:black" />
+                    <div class="oe_structure" />
 
-                    <t t-if="doc.note">
-                        <div style="margin-top:30px">
+                    <t t-if="not is_html_empty(doc.note)" name="terminos">
+                        <div style="margin-top:30px;">
 
-                            <span t-esc="'TERMINO Y CONDICIONES DE PAGO'" />
+                            <span t-esc="'TÉRMINO Y CONDICIONES DE PAGO'" />
 
-                            <div style="color:black">
+                            <div style="color:black;">
                                 <span t-field="doc.note" />
                             </div>
                         </div>
                     </t>
 
-                    <div style="margin-top:30px">
+                    <div style="margin-top:30px;">
                         <div class="row">
-                            <div class="col-6" style="margin-top:80px">
+                            <div class="col-6" style="margin-top:80px;">
                                 <div style="text-align:center;">
-                                    <t t-esc="'__________________________________________'" />        
+                                    <t t-esc="'__________________________________________'" />
                                 </div>
                                 <div style="text-align:center;">
                                     <t t-esc="'Preparado por: '" />
                                     <span t-field="doc.create_uid" />
                                 </div>
                             </div>
-                            <div class="col-6" name="order_data" style="margin-top:80px">
+                            <div class="col-6" name="order_data" style="margin-top:80px;">
                                 <div style="text-align:center;">
-                                    <t t-esc="'________________________________________'" />                                    
+                                    <t t-esc="'________________________________________'" />
                                 </div>
-                                <div style="text-align:center;">                                
+                                <div style="text-align:center;">
                                     <t t-esc="'Recibido por: '" />
-                                    <span t-field="doc.write_uid" />                            
+                                    <span t-field="doc.write_uid" />
                                 </div>
                             </div>
-                        </div>                        
+                        </div>
                     </div>
 
-                    <div t-if="doc.signature" class="mt32 ml64 mr4" name="signature" style="margin-top:30px">
-                        
+                    <div t-if="doc.signature" class="mt32 ml64 mr4" name="signature" style="margin-top:30px;">
+
                         <div style="text-align:center">
                             <img t-att-src="image_data_uri(doc.signature)" style="max-height: 4cm; max-width: 8cm;" />
                         </div>
                         <div style="text-align:center;">
-                            <t t-esc="'________________________________________'" />                                    
+                            <t t-esc="'________________________________________'" />
                         </div>
-                        <div style="text-align:center">
+                        <div style="text-align:center;">
                             <t t-esc="'Firma del cliente: '" />
                             <span t-field="doc.signed_by" />
                         </div>
@@ -345,27 +344,13 @@
                 </div>
 
                 <!-- support for custom footer -->
-                <t t-if="not o" t-set="o" t-value="doc" />
-
-                <t t-if="not company">
-                    <!-- Multicompany -->
-                    <t t-if="company_id">
-                        <t t-set="company" t-value="company_id" />
-                    </t>
-                    <t t-elif="o and 'company_id' in o and o.company_id.sudo()">
-                        <t t-set="company" t-value="o.company_id.sudo()" />
-                    </t>
-                    <t t-else="else">
-                        <t t-set="company" t-value="res_company" />
-                    </t>
-                </t>                
 
                 <div t-attf-class="footer o_standard_footer o_company_#{company.id}_layout">
-                    <div class="row" style="margin-top:1px; margin-left:5px">                   
+                    <div class="row" style="margin-top:1px; margin-left:5px;">
                         <div t-if="doc.date_order">
-                            <t t-esc="'Fecha:'"  />
+                            <t t-esc="'Fecha:'" />
                             <span t-field="doc.date_order" />
-                        </div>               
+                        </div>
                     </div>
                     <div class="text-center" style="border-top: 1px solid black;">
                         <ul class="list-inline mb4">
@@ -387,7 +372,7 @@
                             <li t-if="company.vat" class="list-inline-item d-inline">
                                 <t
                                     t-out="company.country_id.vat_label or 'Tax ID'" />
-                                :
+
                                 <span t-field="company.vat" />
                             </li>
                         </ul>
