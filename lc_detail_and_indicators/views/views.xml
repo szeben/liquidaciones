@@ -27,7 +27,7 @@
               <group>
                 <field name="total_closeouts" string="Cantidad de líneas"/>
                 <field name="currency_rate_usd"/>
-                <field name="date" string="Fecha de la tasa de cambio"/>
+                <field name="currency_rate_date_usd"/>
                 <field name="factor"/>
               </group>
               <group>
@@ -119,10 +119,26 @@
       </field>
     </record>
 
+    <record id="view_stock_move_closeouts_detail_search" model="ir.ui.view">
+      <field name="name">stock.move.closeouts.detail.search</field>
+      <field name="model">stock.move</field>
+      <field name="arch" type="xml">
+        <search string="Detalle de la liquidación">
+          <group expand="0" string="Group By">
+            <filter string="Producto" name="product_id" context="{'group_by': 'product_id'}"/>
+            <filter string="Orden de compra" name="purchase_order_id" context="{'group_by': 'purchase_order_id'}"/>
+            <filter string="Suplidor" name="supplier_id" context="{'group_by': 'supplier_id'}"/>
+            <filter string="Factura" name="invoice_ids" context="{'group_by': 'invoice_ids'}"/>
+          </group>
+        </search>
+      </field>
+    </record>
+
     <record id="closeouts_detail_action_window" model="ir.actions.act_window">
       <field name="name">Detalle de Liquidación</field>
       <field name="res_model">stock.move</field>
       <field name="view_mode">tree,form</field>
+      <field name="search_view_id" ref="view_stock_move_closeouts_detail_search"/>
     </record>
 
     <record id="closeouts_detail_action_view" model="ir.actions.act_window.view">

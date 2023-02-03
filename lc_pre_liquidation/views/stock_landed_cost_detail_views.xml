@@ -7,7 +7,7 @@
       <field name="priority" eval="20"/>
       <field name="arch" type="xml">
 
-        <tree multi_edit="1" sample="1" create="0" edit="1">
+        <tree multi_edit="1" sample="1" create="0" edit="1" delete="0">
           <field name="item"/>
           <field name="quantity" string="Qty" readonly="1"/>
           <field name="product_id" string="Descripción" readonly="1" optional="show"/>
@@ -37,7 +37,7 @@
       <field name="priority" eval="20"/>
       <field name="arch" type="xml">
 
-        <form create="0">
+        <form create="0" delete="0">
           <sheet>
             <group>
               <group>

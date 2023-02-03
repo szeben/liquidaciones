@@ -143,10 +143,11 @@ class StockMove(models.Model):
     @api.depends('picking_id', 'picking_id.purchase_id', 'picking_id.purchase_id.invoice_ids', 'purchase_line_id.order_id')
     def _compute_info_purchase(self):
         for record in self:
-            if record.purchase_line_id and record.purchase_line_id.order_id:
-                record.purchase_order_id = record.purchase_line_id.order_id
-            else:
+            if record.picking_id.purchase_id:
                 record.purchase_order_id = record.picking_id.purchase_id
+            else:
+                record.purchase_order_id = record.purchase_line_id.order_id
+
             record.invoice_ids = record.picking_id.purchase_id.invoice_ids
             record.supplier_id = record.picking_id.partner_id
 
@@ -156,7 +157,7 @@ class StockMove(models.Model):
             record.item = item
 
             if record.purchase_order_id and record.purchase_order_id.currency_rate:
-                record.price_unit_rd = record.price_unit / record.purchase_order_id.currency_rate
+                record.price_unit_rd = record.price_unit * record.purchase_order_id.currency_rate
             else:
                 record.price_unit_rd = record.price_unit
 
@@ -242,6 +243,11 @@ class StockLandedCost(models.Model):
         compute="_compute_total_closeouts",
         readonly=True,
     )
+    currency_rate_date_usd = fields.Date(
+        string="Fecha de tasa de cambio",
+        compute="_compute_currency_rate_usd",
+        readonly=True,
+    )
     currency_rate_usd = fields.Float(
         string="Tasa de cambio",
         compute="_compute_currency_rate_usd",
@@ -276,9 +282,13 @@ class StockLandedCost(models.Model):
     @api.depends('date')
     def _compute_currency_rate_usd(self):
         for record in self:
-            record.currency_rate_usd = self.env["res.currency"].with_context({
+            currency = self.env["res.currency"].with_context({
                 'date': record.date,
-            }).browse(self.env.ref('base.USD').id).inverse_rate
+            }).search([('name', '=', 'USD')], limit=1)
+            record.currency_rate_usd = currency.inverse_rate
+            record.currency_rate_date_usd = currency.rate_ids.filtered(
+                lambda x: x.name <= record.date
+            ).sorted(key=lambda x: x.name, reverse=True)[0].name
 
     def _get_stock_moves(self) -> 'StockMove':
         self.ensure_one()

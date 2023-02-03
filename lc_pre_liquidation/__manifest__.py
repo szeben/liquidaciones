@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "Visualización de suplidores relacionados a una liquidación",
+    'name': "Preliquidaciones",
 
     'summary': """
-        Permite la visualización de los suplidores relacionados a una 
-        liquidación, desde la misma vista del documento""",
+        Incluye en el módulo de compras un simulador para el cálculo 
+        de coste en destino o liquidaciones, sin afectación en 
+        inventario, ni afectación contable.""",
 
     'description': """
-        Permite la visualización de los suplidores relacionados a una 
-        liquidación, desde la misma vista del documento. Los suplidores 
-        son listados de acuerdo a las facturas asociadas al coste en 
-        destino o liquidación
+        Incluye en el módulo de compras un simulador para el cálculo de 
+        coste en destino o liquidaciones, sin afectación en inventario, 
+        ni afectación contable.
     """,
 
     'author': "Techne Studio IT & Consulting",
@@ -21,7 +21,7 @@
     # Categories can be used to filter modules in modules listing
     # Check https://github.com/odoo/odoo/blob/14.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
-    'category': 'Stock',
+    'category': 'Purchase',
     'version': '0.1',
 
     # any module necessary for this one to work correctly

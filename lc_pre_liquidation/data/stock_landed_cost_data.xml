@@ -11,7 +11,7 @@
         <record id="seq_stock_landed_costs" model="ir.sequence">
             <field name="name">Preliminary Stock Landed Costs</field>
             <field name="code">pre.stock.landed.cost</field>
-            <field name="prefix">PL/%(year)s/</field>
+            <field name="prefix">PLQ/%(year)s/</field>
             <field name="padding">4</field>
             <field name="company_id" eval="False"/>
         </record>
