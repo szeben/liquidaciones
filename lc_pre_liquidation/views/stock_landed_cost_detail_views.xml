@@ -12,7 +12,7 @@
           <field name="quantity" string="Qty" readonly="1"/>
           <field name="product_id" string="Descripción" readonly="1" optional="show"/>
           <field name="price_unit" string="C/U US$" optional="show"/>
-          <field name="price_subtotal" sum="Total" optional="show"/>
+          <field name="price_unit_usd" sum="Total" optional="show"/>
           <field name="price_unit_rd" optional="show"/>
           <field name="amount_total_rd" sum="Total" optional="show"/>
           <field name="factor" optional="show"/>
@@ -45,7 +45,7 @@
                 <field name="quantity" string="Qty" readonly="1"/>
                 <field name="product_id" string="Descripción" readonly="1"/>
                 <field name="price_unit" string="C/U US$" readonly="1"/>
-                <field name="price_subtotal"/>
+                <field name="price_unit_usd"/>
                 <field name="price_unit_rd"/>
                 <field name="amount_total_rd"/>
                 <field name="factor"/>

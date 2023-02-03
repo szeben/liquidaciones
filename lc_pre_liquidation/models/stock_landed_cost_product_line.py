@@ -56,7 +56,7 @@ class StockLandedCostProductLine(models.Model):
         related="cost_id.currency_rate_usd",
         readonly=True,
     )
-    price_subtotal = fields.Float(
+    price_unit_usd = fields.Float(
         string="Total US$",
         compute="_compute_totals",
         readonly=True,
@@ -98,7 +98,7 @@ class StockLandedCostProductLine(models.Model):
     )
     pvp_usd = fields.Float(
         string="PVP US$",
-        default=lambda self: self.product_id.lst_price
+        default=lambda self: self.product_id.lst_price * self.env.ref('base.USD').rate,
     )
     pvp_rd = fields.Float(
         string="PVP RD",
@@ -131,13 +131,13 @@ class StockLandedCostProductLine(models.Model):
     def _compute_totals(self):
         for item, record in enumerate(self, start=1):
             record.item = item
-            record.price_subtotal = record.price_unit * record.quantity
+            record.price_unit_usd = record.price_unit * record.quantity
             record.price_unit_rd = record.price_unit * record.currency_rate_usd
             record.amount_total_rd = record.price_unit_rd * record.quantity
 
-    @api.depends('cost_id.amount_total', 'price_subtotal', 'amount_total_rd')
+    @api.depends('cost_id.amount_total', 'price_unit_usd', 'amount_total_rd')
     def _compute_factor(self):
-        total_usd = sum(self.mapped('price_subtotal'))
+        total_usd = sum(self.mapped('price_unit_usd'))
         total_rd = sum(self.mapped('amount_total_rd'))
         if total_usd:
             self.factor = (self.cost_id.amount_total + total_rd) / total_usd
@@ -175,7 +175,7 @@ class StockLandedCostProductLine(models.Model):
 
         if not pvp_usd:
             product = self.env['product.product'].browse(vals.get('product_id'))
-            pvp_usd = product.lst_price
+            pvp_usd = product.lst_price * self.env.ref('base.USD').rate
 
         return pvp_usd
 

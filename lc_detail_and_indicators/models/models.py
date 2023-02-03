@@ -104,7 +104,7 @@ class StockMove(models.Model):
     )
     pvp_usd = fields.Float(
         string="PVP US$",
-        default=lambda self: self.product_id.lst_price * self.env.ref('base.USD').inverse_rate,
+        default=lambda self: self.product_id.lst_price * self.env.ref('base.USD').rate,
     )
     pvp_rd = fields.Float(
         string="PVP RD",
@@ -212,7 +212,7 @@ class StockMove(models.Model):
 
     def get_lst_price_from_product(self, vals):
         product = self.env['product.product'].browse(vals.get('product_id'))
-        return (product.lst_price or 0.0) * self.env.ref('base.USD').inverse_rate
+        return (product.lst_price or 0.0) * self.env.ref('base.USD').rate
 
     @api.model
     def create(self, vals_list):

@@ -33,7 +33,7 @@
             <tbody>
                 <tr t-foreach="lines" t-as="line">
                     <td>
-                        <strong t-esc="line.string"/>
+                        <strong t-out="line.string"/>
                     </td>
                     <td class="col-right" t-out="line.usd.toLocaleString(undefined, {'minimumFractionDigits': 2, 'maximumFractionDigits': 2})"/>
                     <td class="col-right" t-out="line.rd.toLocaleString(undefined, {'minimumFractionDigits': 2, 'maximumFractionDigits': 2})"/>

@@ -92,7 +92,9 @@ class StockLandedCost(models.Model):
     currency_rate_usd = fields.Float(
         'Rate',
         digits=(12, 6),
-        default=lambda self: self.env.ref('base.USD').inverse_rate
+        default=lambda self: self.env["res.currency"].with_context(
+            date=self.date
+        ).search([('name', '=', 'USD')]).inverse_rate
     )
     product_detail_ids = fields.One2many(
         comodel_name='pre.stock.product.detail',
@@ -127,6 +129,14 @@ class StockLandedCost(models.Model):
         compute="_compute_detail_metrics",
         readonly=True,
     )
+
+    @api.onchange('date')
+    def _onchange_date(self):
+        for cost in self:
+            cost.currency_rate_usd = self.env["res.currency"].with_context(
+                date=cost.date
+            ).search([('name', '=', 'USD')]).inverse_rate
+            cost.update({"currency_rate_usd": cost.currency_rate_usd})
 
     @api.depends('cost_lines.price_unit')
     def _compute_total_amount(self):
@@ -256,17 +266,13 @@ class StockLandedCost(models.Model):
                         else:
                             value = (line.price_unit / total_line)
 
+                        # if digits:
+                        #     value = tools.float_round(value, precision_digits=digits, rounding_method='UP')
                         if rounding:
                             value = tools.float_round(value, precision_rounding=rounding, rounding_method='UP')
                             fnc = min if line.price_unit > 0 else max
                             value = fnc(value, line.price_unit - value_split)
                             value_split += value
-
-                        # if digits:
-                        #     value = tools.float_round(value, precision_digits=digits, rounding_method='UP')
-                        #     fnc = min if line.price_unit > 0 else max
-                        #     value = fnc(value, line.price_unit - value_split)
-                        #     value_split += value
 
                         if valuation.id not in towrite_dict:
                             towrite_dict[valuation.id] = value
@@ -305,7 +311,7 @@ class StockLandedCost(models.Model):
         # TODO: check if the cost is already applied on the stock moves
         for cost in self:
             if not cost.product_lines:
-                raise UserError('Agregue algunas líneas de costo.')
+                raise UserError('Agrege algunas líneas de productos.')
 
     def _check_sum(self):
         prec_digits = self.env.company.currency_id.decimal_places
@@ -355,7 +361,7 @@ class StockLandedCost(models.Model):
     def _get_metrics(self):
         self.ensure_one()
 
-        price_subtotal = self.product_lines.mapped('price_subtotal')
+        price_unit_usd = self.product_lines.mapped('price_unit_usd')
         amount_total_rd = self.product_lines.mapped('amount_total_rd')
 
         current_total_usd = self.product_lines.mapped('current_total_usd')
@@ -370,7 +376,7 @@ class StockLandedCost(models.Model):
         return OrderedDict([
             ("total_fob", {
                 "string": "Total FOB",
-                "usd": sum(price_subtotal),
+                "usd": sum(price_unit_usd),
                 "rd": sum(amount_total_rd)
             }),
             ("current_total_cost", {
