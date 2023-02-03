@@ -108,8 +108,7 @@ class StockMove(models.Model):
     )
     pvp_rd = fields.Float(
         string="PVP RD",
-        compute="_compute_pvp",
-        compute_sudo=True,
+        default=lambda self: self.product_id.lst_price,
         readonly=True,
     )
     margin = fields.Float(
@@ -128,16 +127,17 @@ class StockMove(models.Model):
         readonly=True,
     )
 
+    @api.onchange('product_id', 'currency_rate_usd')
+    def _onchange_pvp_usd_from_product_id(self):
+        for record in self:
+            record.pvp_usd = record.product_id.lst_price * record.currency_rate_usd
+            record.update({'pvp_usd': record.pvp_usd})
+
     @api.depends_context('landed_cost_date', 'date')
     def _compute_rate_usd(self):
-        date = (
-            self._context.get('landed_cost_date')
-            or self._context.get('date')
-            or fields.Date.today()
-        )
-        self.currency_date_rate = date
+        self.currency_date_rate = self.get_date_from_landed_cost()
         self.currency_rate_usd = self.env["res.currency"].with_context({
-            'date': date,
+            'date': self.get_date_from_landed_cost(),
         }).search([("name", "=", "USD")]).inverse_rate
 
     @api.depends('picking_id', 'picking_id.purchase_id', 'picking_id.purchase_id.invoice_ids', 'purchase_line_id.order_id')
@@ -155,13 +155,13 @@ class StockMove(models.Model):
     def _compute_totals(self):
         for item, record in enumerate(self, start=1):
             record.item = item
+            record.price_unit_rd = record.price_unit
 
             if record.purchase_order_id and record.purchase_order_id.currency_rate:
-                record.price_unit_rd = record.price_unit * record.purchase_order_id.currency_rate
+                record.price_unit_usd = record.price_unit_rd * record.purchase_order_id.currency_rate
             else:
-                record.price_unit_rd = record.price_unit
+                record.price_unit_usd = record.price_unit_rd / record.currency_rate_usd
 
-            record.price_unit_usd = record.price_unit_rd / record.currency_rate_usd
             record.amount_total_usd = record.price_unit_usd * record.product_uom_qty
             record.amount_total_rd = record.price_unit_rd * record.product_uom_qty
 
@@ -196,11 +196,6 @@ class StockMove(models.Model):
             )
             record.current_total_usd = record.current_price_unit_usd * record.product_uom_qty
 
-    @api.depends('currency_rate_usd', 'pvp_usd')
-    def _compute_pvp(self):
-        for record in self:
-            record.pvp_rd = record.pvp_usd * record.currency_rate_usd
-
     @api.depends('pvp_usd', 'pvp_rd', 'current_price_unit_usd', 'current_price_unit_rd', 'product_uom_qty')
     def _compute_extra_indicators(self):
         for record in self:
@@ -211,17 +206,33 @@ class StockMove(models.Model):
             record.profit_usd = (record.pvp_usd - record.current_price_unit_usd) * record.product_uom_qty
             record.profit_rd = (record.pvp_rd - record.current_price_unit_rd) * record.product_uom_qty
 
-    def get_lst_price_from_product(self, vals):
+    def get_date_from_landed_cost(self):
+        return (
+            self._context.get('landed_cost_date')
+            or self._context.get('date')
+            or fields.Date.today()
+        )
+
+    def get_lst_price_from_product(self, vals, date=None):
+        date = date or self.get_date_from_landed_cost()
         product = self.env['product.product'].browse(vals.get('product_id'))
-        return (product.lst_price or 0.0) * self.env.ref('base.USD').rate
+        currency_usd = self.env["res.currency"].with_context({
+            'date': date,
+        }).search([("name", "=", "USD")], limit=1)
+
+        data = {"pvp_rd": product.lst_price or 0.0}
+        if currency_usd:
+            data.update({"pvp_usd": data["pvp_rd"] * currency_usd.rate})
+
+        return data
 
     @api.model
     def create(self, vals_list):
         if isinstance(vals_list, dict):
-            vals_list['pvp_usd'] = self.get_lst_price_from_product(vals_list)
-        else:
+            vals_list.update(self.get_lst_price_from_product(vals_list))
+        elif isinstance(vals_list, list):
             for vals in vals_list:
-                vals['pvp_usd'] = self.get_lst_price_from_product(vals)
+                vals.update(self.get_lst_price_from_product(vals_list))
         return super().create(vals_list)
 
 

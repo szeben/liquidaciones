@@ -14,7 +14,7 @@ class StockProductDetail(models.Model):
     )
     landed_cost_id = fields.Many2one(
         comodel_name='pre.stock.landed.cost',
-        string=u'Liquidación',
+        string=u'Pre liquidación',
         ondelete='cascade',
         required=True
     )

@@ -43,7 +43,7 @@
                                     <form string="Productos">
                                         <group>
                                             <group>
-                                                <field name="product_id"/>
+                                                <field name="product_id" options="{'no_create': True, 'no_edit': True}"/>
                                                 <field name="quantity"/>
                                                 <field name="price_unit"/>
                                                 <field name="total"/>
@@ -51,7 +51,7 @@
                                         </group>
                                     </form>
                                     <tree string="Productos" editable="bottom">
-                                        <field name="product_id"/>
+                                        <field name="product_id" options="{'no_create': True, 'no_edit': True}"/>
                                         <field name="quantity"/>
                                         <field name="price_unit"/>
                                         <field name="total"/>
@@ -240,7 +240,7 @@
         </record>
 
         <record id='action_pre_stock_landed_cost' model='ir.actions.act_window'>
-            <field name="name">Liquidación</field>
+            <field name="name">Preliquidación</field>
             <field name="res_model">pre.stock.landed.cost</field>
             <field name="view_mode">tree,form,kanban</field>
             <field name="context">{}</field>

@@ -31,7 +31,8 @@ class StockLandedCostProductLine(models.Model):
     price_unit = fields.Monetary(
         string='Precio Unitario',
         currency_field='currency_id',
-        required=True
+        required=True,
+        default=lambda self: (self.product_id and self.product_id.standard_price) or 0.0
     )
     currency_id = fields.Many2one(
         'res.currency',
@@ -126,6 +127,13 @@ class StockLandedCostProductLine(models.Model):
     def _compute_total(self):
         for line in self:
             line.total = line.quantity * line.price_unit
+
+    @api.onchange('product_id')
+    def _onchange_product_id(self):
+        if self.product_id:
+            # self.currency_id = self.product_id.currency_id
+            self.price_unit = self.product_id.standard_price
+            self.update({"price_unit": self.price_unit})
 
     @api.depends('currency_rate_usd', 'price_unit', 'quantity')
     def _compute_totals(self):

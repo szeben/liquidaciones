@@ -59,7 +59,7 @@
           <field name="purchase_order_id" optional="show"/>
           <field name="invoice_ids" widget="many2many_tags" optional="show"/>
           <field name="currency_rate_usd" optional="show"/>
-          <field name="price_unit" string="C/U US$" optional="show"/>
+          <field name="price_unit_usd" string="C/U US$" optional="show"/>
           <field name="amount_total_usd" sum="Total" optional="show"/>
           <field name="price_unit_rd" optional="show"/>
           <field name="amount_total_rd" sum="Total" optional="show"/>

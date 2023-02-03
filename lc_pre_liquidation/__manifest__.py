@@ -34,6 +34,9 @@
         'data/stock_landed_cost_data.xml',
         'views/stock_landed_cost_views.xml',
         'views/stock_landed_cost_detail_views.xml',
+        'report/report_stock_landed_costs_view.xml',
+        'report/report_stock_landed_costs.xml'
+        
     ],
     # only loaded in demonstration mode
     'demo': [

@@ -37,7 +37,7 @@ class StockLandedCost(models.Model):
         default=fields.Date.context_today,
         copy=False,
         required=True,
-        states={'done': [('readonly', True)]},
+        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]},
         tracking=True
     )
 
@@ -46,17 +46,17 @@ class StockLandedCost(models.Model):
         'cost_id',
         'Cost Lines',
         copy=True,
-        states={'done': [('readonly', True)]}
+        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}
     )
     valuation_adjustment_lines = fields.One2many(
         'pre.stock.valuation.adjustment.lines',
         'cost_id',
         'Valuation Adjustments',
-        states={'done': [('readonly', True)]}
+        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}
     )
     description = fields.Text(
         'Item Description',
-        states={'done': [('readonly', True)]}
+        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}
     )
     amount_total = fields.Monetary(
         'Total',
@@ -74,7 +74,8 @@ class StockLandedCost(models.Model):
     )
     currency_id = fields.Many2one(
         'res.currency',
-        default=lambda self: self.env.ref('base.USD')
+        default=lambda self: self.env.ref('base.USD'),
+        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}
     )
     company_id = fields.Many2one(
         'res.company',
@@ -87,20 +88,22 @@ class StockLandedCost(models.Model):
         'pre.stock.landed.cost.product.lines',
         'cost_id',
         string='Product Lines',
-        states={'done': [('readonly', True)]}
+        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}
     )
     currency_rate_usd = fields.Float(
         'Rate',
         digits=(12, 6),
         default=lambda self: self.env["res.currency"].with_context(
             date=self.date
-        ).search([('name', '=', 'USD')]).inverse_rate
+        ).search([('name', '=', 'USD')]).inverse_rate,
+        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}
     )
     product_detail_ids = fields.One2many(
         comodel_name='pre.stock.product.detail',
         inverse_name='landed_cost_id',
         string='Detalle por producto',
-        copy=False
+        copy=False,
+        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}
     )
 
     # Detail
@@ -292,7 +295,7 @@ class StockLandedCost(models.Model):
             additional_cost = line.additional_landed_cost / line.quantity
             value = line.former_cost/line.quantity
 
-            self.env['stock.product.detail'].create({
+            self.env['pre.stock.product.detail'].create({
                 'name': self.name,
                 'landed_cost_id': self.id,
                 'product_id': line.product_id.id,
