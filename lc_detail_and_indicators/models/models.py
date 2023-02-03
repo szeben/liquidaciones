@@ -47,12 +47,22 @@ class StockMove(models.Model):
         readonly=True,
         domain=[('move_type', '=', 'in_invoice')]
     )
+    currency_date_rate = fields.Date(
+        string="Fecha tasa",
+        compute="_compute_rate_usd",
+        readonly=True,
+    )
     currency_rate_usd = fields.Float(
         string="Tasa USD",
         compute="_compute_rate_usd",
         readonly=True,
     )
-    price_subtotal = fields.Float(
+    price_unit_usd = fields.Float(
+        string="C/U US$",
+        compute="_compute_totals",
+        readonly=True,
+    )
+    amount_total_usd = fields.Float(
         string="Total US$",
         compute="_compute_totals",
         readonly=True,
@@ -94,7 +104,7 @@ class StockMove(models.Model):
     )
     pvp_usd = fields.Float(
         string="PVP US$",
-        default=lambda self: self.product_id.lst_price
+        default=lambda self: self.product_id.lst_price * self.env.ref('base.USD').inverse_rate,
     )
     pvp_rd = fields.Float(
         string="PVP RD",
@@ -125,26 +135,36 @@ class StockMove(models.Model):
             or self._context.get('date')
             or fields.Date.today()
         )
+        self.currency_date_rate = date
         self.currency_rate_usd = self.env["res.currency"].with_context({
             'date': date,
         }).search([("name", "=", "USD")]).inverse_rate
 
-    @api.depends('picking_id', 'picking_id.purchase_id', 'picking_id.purchase_id.invoice_ids')
+    @api.depends('picking_id', 'picking_id.purchase_id', 'picking_id.purchase_id.invoice_ids', 'purchase_line_id.order_id')
     def _compute_info_purchase(self):
         for record in self:
-            record.purchase_order_id = record.picking_id.purchase_id
+            if record.purchase_line_id and record.purchase_line_id.order_id:
+                record.purchase_order_id = record.purchase_line_id.order_id
+            else:
+                record.purchase_order_id = record.picking_id.purchase_id
             record.invoice_ids = record.picking_id.purchase_id.invoice_ids
             record.supplier_id = record.picking_id.partner_id
 
-    @api.depends('currency_rate_usd', 'price_unit', 'product_uom_qty')
+    @api.depends('currency_rate_usd', 'price_unit', 'product_uom_qty', 'purchase_order_id')
     def _compute_totals(self):
         for item, record in enumerate(self, start=1):
             record.item = item
-            record.price_subtotal = record.price_unit * record.product_uom_qty
-            record.price_unit_rd = record.price_unit * record.currency_rate_usd
+
+            if record.purchase_order_id and record.purchase_order_id.currency_rate:
+                record.price_unit_rd = record.price_unit / record.purchase_order_id.currency_rate
+            else:
+                record.price_unit_rd = record.price_unit
+
+            record.price_unit_usd = record.price_unit_rd / record.currency_rate_usd
+            record.amount_total_usd = record.price_unit_usd * record.product_uom_qty
             record.amount_total_rd = record.price_unit_rd * record.product_uom_qty
 
-    @api.depends('price_subtotal', 'amount_total_rd')
+    @api.depends('amount_total_usd', 'amount_total_rd')
     @api.depends_context('landed_cost_id', 'active_id')
     def _compute_factor(self):
         landed_cost = self.env['stock.landed.cost'].browse(
@@ -155,7 +175,7 @@ class StockMove(models.Model):
             stock_move_ids = self.browse(
                 landed_cost._get_move_ids_without_package().ids
             )
-            total_usd = sum(stock_move_ids.mapped('price_subtotal'))
+            total_usd = sum(stock_move_ids.mapped('amount_total_usd'))
             total_rd = sum(stock_move_ids.mapped('amount_total_rd'))
             if total_usd:
                 self.factor = (landed_cost.amount_total + total_rd) / total_usd
@@ -192,7 +212,7 @@ class StockMove(models.Model):
 
     def get_lst_price_from_product(self, vals):
         product = self.env['product.product'].browse(vals.get('product_id'))
-        return product.lst_price
+        return (product.lst_price or 0.0) * self.env.ref('base.USD').inverse_rate
 
     @api.model
     def create(self, vals_list):
@@ -233,12 +253,12 @@ class StockLandedCost(models.Model):
         readonly=True,
     )
     avg_margin = fields.Float(
-        string="Margen promedio",
+        string=u"Margen promedio %",
         compute="_compute_detail_metrics",
         readonly=True,
     )
     median_margin = fields.Float(
-        string="Margen medio",
+        string=u"Margen medio %",
         compute="_compute_detail_metrics",
         readonly=True,
     )
@@ -294,7 +314,7 @@ class StockLandedCost(models.Model):
         self.ensure_one()
         stock_moves = stock_moves or self._get_stock_moves()
 
-        price_subtotal = stock_moves.mapped('price_subtotal')
+        amount_total_usd = stock_moves.mapped('amount_total_usd')
         amount_total_rd = stock_moves.mapped('amount_total_rd')
 
         current_total_usd = stock_moves.mapped('current_total_usd')
@@ -309,7 +329,7 @@ class StockLandedCost(models.Model):
         return OrderedDict([
             ("total_fob", {
                 "string": "Total FOB",
-                "usd": sum(price_subtotal),
+                "usd": sum(amount_total_usd),
                 "rd": sum(amount_total_rd)
             }),
             ("current_total_cost", {

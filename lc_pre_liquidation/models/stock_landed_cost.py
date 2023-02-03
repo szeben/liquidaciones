@@ -113,12 +113,12 @@ class StockLandedCost(models.Model):
         readonly=True,
     )
     avg_margin = fields.Float(
-        string="Margen promedio",
+        string=u"Margen promedio %",
         compute="_compute_detail_metrics",
         readonly=True,
     )
     median_margin = fields.Float(
-        string="Margen medio",
+        string=u"Margen medio %",
         compute="_compute_detail_metrics",
         readonly=True,
     )

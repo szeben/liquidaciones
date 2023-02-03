@@ -35,8 +35,8 @@
                     <td>
                         <strong t-esc="line.string"/>
                     </td>
-                    <td class="col-right" t-esc="line.usd.toFixed('2')"/>
-                    <td class="col-right" t-esc="line.rd.toFixed('2')"/>
+                    <td class="col-right" t-out="line.usd.toLocaleString(undefined, {'minimumFractionDigits': 2, 'maximumFractionDigits': 2})"/>
+                    <td class="col-right" t-out="line.rd.toLocaleString(undefined, {'minimumFractionDigits': 2, 'maximumFractionDigits': 2})"/>
                 </tr>
             </tbody>
         </table>

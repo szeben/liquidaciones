@@ -144,7 +144,7 @@ class AccountMove(models.Model):
         )
 
         landed_costs = self.env['stock.landed.cost'].create({
-            'vendor_bill_ids': [(4, 0, self.id)],
+            'vendor_bill_ids': self,
             'cost_lines': [(0, 0, {
                 'product_id': l.product_id.id,
                 'name': l.product_id.name,
