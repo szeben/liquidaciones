@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+<data>
+
+    <record model="ir.ui.view" id="view_product_template_extra_prices">
+        <field name="name">product.template.extra.prices</field>
+        <field name="model">product.template</field> 
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="sheet/notebook/page[@name='general_information']" position="inside">
+                <group string="Precios Extras">
+                    <field colspan="2" name="precios_extras_ids" nolabel="1" />
+                </group>
+            </xpath>
+            
+            
+            <xpath expr="//page[@name='general_information']/group/field[@name='precios_extras_ids']" position="inside">
+                <tree string="Price Rules" limit="10" context="{'product_tmpl_id': self.id,  'product_id': 'model.view_id'}">
+                  <field name="pricelist_id"/>
+                  <field name="name" string="Applied On"/>
+                  <field name="price"/>
+                  <field name="min_quantity" colspan="4"/>
+                  <field name="date_start" optional="hide"/>
+                  <field name="date_end" optional="hide"/>
+                  <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                </tree>
+          </xpath>
+            
+
+        </field>
+    </record>  
+
+
+
+</data>
+</odoo>
