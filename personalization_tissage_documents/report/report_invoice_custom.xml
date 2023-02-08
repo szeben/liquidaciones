@@ -275,9 +275,9 @@
                                             </td>
                                         </tr>
 
-                                        <tr>
-                                            <td>Descuentos</td>
-                                            <td class="text-right">
+                                        <tr t-if="display_discount">
+                                            <td t-if="display_discount">Descuentos</td>
+                                            <td t-if="display_discount" class="text-right" >
                                                 <span
                                                     t-esc="total_descuentos"
                                                     t-options='{"widget": "monetary", "display_currency": o.currency_id}'
