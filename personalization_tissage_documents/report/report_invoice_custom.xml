@@ -327,7 +327,8 @@
                                                         <strong>Amount Due</strong>
                                                     </td>
                                                     <td class="text-right">
-                                                        <span t-field="o.amount_residual" />
+                                                        <span t-field="o.amount_residual"
+                                                        t-options='{"widget": "monetary", "display_currency": o.currency_id}' />
                                                     </td>
                                                 </tr>
                                             </t>

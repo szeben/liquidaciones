@@ -336,7 +336,8 @@
                                                 <strong>Monto Adeudado Total</strong>
                                             </td>
                                             <td class="text-right">
-                                                <span t-field="doc.amount_residual" />
+                                                <span t-field="doc.amount_residual"
+                                                t-options='{"widget": "monetary", "display_currency": o.currency_id}' />
                                             </td>
                                         </tr>
                                     </t>
