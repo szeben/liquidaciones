@@ -20,8 +20,7 @@ class StockProductDetail(models.Model):
     )
     product_id = fields.Many2one(
         'product.product',
-        string='Producto',
-        required=True
+        string='Producto'
     )
     quantity = fields.Float(
         string='Cantidad',

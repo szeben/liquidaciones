@@ -11,13 +11,19 @@ from odoo.tools.float_utils import float_is_zero
 class StockLandedCost(models.Model):
     _inherit = 'stock.landed.cost'
 
-    vendor_bill_id = None
     vendor_bill_ids = fields.Many2many(
         'account.move',
-        string='Vendor Bills',
+        string='Facturas de proveedores',
         copy=False,
-        domain=[('move_type', '=', 'in_invoice')]
+        domain=[('move_type', '=', 'in_invoice')],
+        states={'done': [('readonly', True)]},
     )
+
+    @api.model
+    def _add_field(self, name, field):
+        if name == 'vendor_bill_id':
+            return
+        return super()._add_field(name, field)
 
     def button_validate(self):
         self._check_can_validate()

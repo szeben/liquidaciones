@@ -91,7 +91,7 @@ class StockLandedCost(models.Model):
         states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}
     )
     currency_rate_usd = fields.Float(
-        'Rate',
+        string='Tasa de cambio',
         digits=(12, 6),
         default=lambda self: self.env["res.currency"].with_context(
             date=self.date
@@ -192,16 +192,22 @@ class StockLandedCost(models.Model):
 
         # TODO: this should be done in batch
         for line in self.product_lines:
-            if line.product_id.cost_method not in {'fifo', 'average'} or not line.quantity:
+            if (line.product_id and line.product_id.cost_method not in {'fifo', 'average'}) or not line.quantity:
                 continue
 
             vals = {
                 'product_id': line.product_id.id,
                 'quantity': line.quantity,
-                'former_cost': 0.0,
-                'weight': line.product_id.weight * line.quantity,
-                'volume': line.product_id.volume * line.quantity
+                'former_cost': line.total,
             }
+
+            if line.product_id:
+                vals['weight'] = line.product_id.weight * line.quantity
+                vals['volume'] = line.product_id.volume * line.quantity
+            else:
+                vals['weight'] = 0.0
+                vals['volume'] = 0.0
+
             lines.append(vals)
 
         if not lines:
@@ -230,15 +236,14 @@ class StockLandedCost(models.Model):
             total_line = 0.0
             all_val_line_values = cost.get_valuation_lines()
 
+
             for val_line_values in all_val_line_values:
                 for cost_line in cost.cost_lines:
                     val_line_values.update({'cost_id': cost.id, 'cost_line_id': cost_line.id})
-                    self.env['pre.stock.valuation.adjustment.lines'].create(val_line_values)
 
                 total_qty += val_line_values.get('quantity', 0.0)
                 total_weight += val_line_values.get('weight', 0.0)
                 total_volume += val_line_values.get('volume', 0.0)
-
                 former_cost = val_line_values.get('former_cost', 0.0)
 
                 # round this because former_cost on the valuation lines is also rounded
@@ -285,20 +290,20 @@ class StockLandedCost(models.Model):
         for key, value in towrite_dict.items():
             AdjustementLines.browse(key).write({'additional_landed_cost': value})
 
-        detail_lines = self.env['pre.stock.product.detail']
-        detail_lines.search([('landed_cost_id', 'in', self.ids)]).unlink()
+        StockProductDetail = self.env['pre.stock.product.detail']
+        StockProductDetail.search([('landed_cost_id', 'in', self.ids)]).unlink()
 
         for line in self.valuation_adjustment_lines:
-            if line.product_id.type != 'product':
+            if (line.product_id and line.product_id.type != 'product'):
                 continue
 
             additional_cost = line.additional_landed_cost / line.quantity
-            value = line.former_cost/line.quantity
+            value = line.former_cost / line.quantity
 
-            self.env['pre.stock.product.detail'].create({
+            StockProductDetail.create({
                 'name': self.name,
                 'landed_cost_id': self.id,
-                'product_id': line.product_id.id,
+                'product_id': line.product_id and line.product_id.id,
                 'quantity': line.quantity,
                 'actual_cost': value,
                 'additional_cost': additional_cost,

@@ -79,6 +79,7 @@ class StockMove(models.Model):
     )
     factor = fields.Float(
         string="Factor",
+        digits=(12, 3),
         compute="_compute_factor",
         readonly=True,
     )
@@ -130,8 +131,14 @@ class StockMove(models.Model):
     @api.onchange('product_id', 'currency_rate_usd')
     def _onchange_pvp_usd_from_product_id(self):
         for record in self:
-            record.pvp_usd = record.product_id.lst_price * record.currency_rate_usd
+            record.pvp_usd = record.product_id.lst_price / record.currency_rate_usd
             record.update({'pvp_usd': record.pvp_usd})
+
+    @api.onchange('pvp_usd', 'currency_rate_usd')
+    def _onchange_pvp_rd_from_pvp_usd(self):
+        for record in self:
+            record.pvp_rd = record.pvp_usd / record.currency_rate_usd
+            record.update({'pvp_rd': record.pvp_rd})
 
     @api.depends_context('landed_cost_date', 'date')
     def _compute_rate_usd(self):
