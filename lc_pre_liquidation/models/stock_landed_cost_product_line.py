@@ -135,7 +135,7 @@ class StockLandedCostProductLine(models.Model):
     @api.onchange('product_id')
     def _onchange_product_id(self):
         if self.product_id:
-            self.price_unit = self.product_id.lst_price
+            self.price_unit = self.product_id.standard_price
             self.description = self.product_id.name
         else:
             self.price_unit = 0.0
@@ -196,7 +196,7 @@ class StockLandedCostProductLine(models.Model):
                 cost_id = self.env['pre.stock.landed.cost'].browse(cost_id)
                 product = self.env['product.product'].browse(product_id)
                 if cost_id:
-                    pvp_usd = product.lst_price * cost_id.currency_rate_usd
+                    pvp_usd = product.list_price / cost_id.currency_rate_usd
             else:
                 pvp_usd = vals.get('price_unit') or 0.0
 

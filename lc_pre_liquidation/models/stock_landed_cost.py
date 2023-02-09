@@ -240,6 +240,7 @@ class StockLandedCost(models.Model):
             for val_line_values in all_val_line_values:
                 for cost_line in cost.cost_lines:
                     val_line_values.update({'cost_id': cost.id, 'cost_line_id': cost_line.id})
+                    AdjustementLines.create(val_line_values)
 
                 total_qty += val_line_values.get('quantity', 0.0)
                 total_weight += val_line_values.get('weight', 0.0)
