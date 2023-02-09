@@ -32,7 +32,7 @@ class StockLandedCostProductLine(models.Model):
         default=1.0
     )
     price_unit = fields.Monetary(
-        string='Precio Unitario',
+        string='Precio Unitario USD',
         currency_field='currency_id',
         required=True
     )
@@ -45,7 +45,7 @@ class StockLandedCostProductLine(models.Model):
 
     # Details
     total = fields.Float(
-        string='Total',
+        string='Total USD',
         compute='_compute_total',
         store=True
     )

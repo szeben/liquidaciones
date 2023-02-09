@@ -16,7 +16,7 @@ class StockLandedCost(models.Model):
         string='Facturas de proveedores',
         copy=False,
         domain=[('move_type', '=', 'in_invoice')],
-        states={'done': [('readonly', True)]},
+        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]},
     )
 
     @api.model
