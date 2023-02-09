@@ -105,11 +105,11 @@ class StockMove(models.Model):
     )
     pvp_usd = fields.Float(
         string="PVP US$",
-        default=lambda self: self.product_id.lst_price * self.env.ref('base.USD').rate,
+        default=lambda self: self.product_id.list_price * self.env.ref('base.USD').rate,
     )
     pvp_rd = fields.Float(
         string="PVP RD",
-        default=lambda self: self.product_id.lst_price,
+        default=lambda self: self.product_id.list_price,
         readonly=True,
     )
     margin = fields.Float(

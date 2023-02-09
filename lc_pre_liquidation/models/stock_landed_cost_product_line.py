@@ -34,8 +34,7 @@ class StockLandedCostProductLine(models.Model):
     price_unit = fields.Monetary(
         string='Precio Unitario',
         currency_field='currency_id',
-        required=True,
-        default=lambda self: (self.product_id and self.product_id.standard_price) or 0.0
+        required=True
     )
     currency_id = fields.Many2one(
         'res.currency',
@@ -132,10 +131,10 @@ class StockLandedCostProductLine(models.Model):
         for line in self:
             line.total = line.quantity * line.price_unit
 
-    @api.onchange('product_id')
+    @api.onchange('product_id', 'cost_id.currency_rate_usd')
     def _onchange_product_id(self):
         if self.product_id:
-            self.price_unit = self.product_id.standard_price
+            self.price_unit = self.product_id.standard_price / self.cost_id.currency_rate_usd
             self.description = self.product_id.name
         else:
             self.price_unit = 0.0
@@ -160,10 +159,10 @@ class StockLandedCostProductLine(models.Model):
         else:
             self.factor = 1.0
 
-    @api.depends('price_unit_rd', 'currency_rate_usd', 'factor', 'quantity')
+    @api.depends('price_unit', 'currency_rate_usd', 'factor', 'quantity')
     def _compute_current_totals(self):
         for record in self:
-            record.current_price_unit_rd = record.price_unit_usd * record.factor
+            record.current_price_unit_rd = record.price_unit * record.factor
             record.current_total_rd = record.current_price_unit_rd * record.quantity
             record.current_price_unit_usd = (
                 record.current_price_unit_rd / record.currency_rate_usd

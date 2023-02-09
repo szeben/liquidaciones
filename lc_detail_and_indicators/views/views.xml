@@ -59,6 +59,7 @@
           <field name="purchase_order_id" optional="show"/>
           <field name="invoice_ids" widget="many2many_tags" optional="show"/>
           <field name="currency_rate_usd" optional="show"/>
+          <field name="currency_date_rate" optional="show"/>
           <field name="price_unit_usd" string="C/U US$" optional="show"/>
           <field name="amount_total_usd" sum="Total" optional="show"/>
           <field name="price_unit_rd" optional="show"/>
@@ -95,6 +96,8 @@
                 <field name="supplier_id"/>
                 <field name="purchase_order_id"/>
                 <field name="invoice_ids" widget="many2many_tags"/>
+                <field name="currency_rate_usd"/>
+                <field name="currency_date_rate"/>
                 <field name="price_unit" string="C/U US$" readonly="1"/>
                 <field name="amount_total_usd"/>
                 <field name="price_unit_rd"/>
