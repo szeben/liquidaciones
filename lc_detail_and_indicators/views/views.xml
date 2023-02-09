@@ -89,7 +89,7 @@
           <sheet>
             <group>
               <group>
-                <field name="item"/>
+                <!-- <field name="item"/> -->
                 <field name="product_uom_qty" string="Qty" readonly="1"/>
                 <field name="product_id" string="Descripción" readonly="1"/>
                 <field name="supplier_id"/>

@@ -192,10 +192,10 @@ class StockMove(models.Model):
         else:
             self.factor = 1.0
 
-    @api.depends('currency_rate_usd', 'factor')
+    @api.depends('price_unit_usd', 'currency_rate_usd', 'factor')
     def _compute_current_totals(self):
         for record in self:
-            record.current_price_unit_rd = record.price_unit_rd * record.factor
+            record.current_price_unit_rd = record.price_unit_usd * record.factor
             record.current_total_rd = record.current_price_unit_rd * record.product_uom_qty
             record.current_price_unit_usd = (
                 record.current_price_unit_rd / record.currency_rate_usd

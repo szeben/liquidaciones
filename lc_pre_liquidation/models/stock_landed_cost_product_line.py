@@ -163,7 +163,7 @@ class StockLandedCostProductLine(models.Model):
     @api.depends('price_unit_rd', 'currency_rate_usd', 'factor', 'quantity')
     def _compute_current_totals(self):
         for record in self:
-            record.current_price_unit_rd = record.price_unit_rd * record.factor
+            record.current_price_unit_rd = record.price_unit_usd * record.factor
             record.current_total_rd = record.current_price_unit_rd * record.quantity
             record.current_price_unit_usd = (
                 record.current_price_unit_rd / record.currency_rate_usd

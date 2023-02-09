@@ -41,7 +41,7 @@
           <sheet>
             <group>
               <group>
-                <field name="item"/>
+                <!-- <field name="item"/> -->
                 <field name="quantity" string="Qty" readonly="1"/>
                 <field name="product_id" string="Descripción" readonly="1"/>
                 <field name="price_unit" string="C/U US$" readonly="1"/>
