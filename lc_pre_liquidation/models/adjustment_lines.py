@@ -19,6 +19,9 @@ class AdjustmentLines(models.Model):
         'Producto', 
         required=False
     )
+    description = fields.Char(
+        string='Descripción'
+    )
     cost_line_id = fields.Many2one(
         'pre.stock.landed.cost.lines',
         string='Cost Line',
@@ -26,6 +29,10 @@ class AdjustmentLines(models.Model):
     )
     additional_landed_cost = fields.Monetary(
         string='Additional Landed Cost'
+    )
+    currency_id = fields.Many2one(
+        'res.currency', 
+        related='cost_id.currency_id'
     )
 
     @api.model

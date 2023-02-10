@@ -109,7 +109,7 @@ class StockMove(models.Model):
     )
     pvp_rd = fields.Float(
         string="PVP RD",
-        default=lambda self: self.product_id.list_price,
+        compute="_compute_pvp_rd",
         readonly=True,
     )
     margin = fields.Float(
@@ -128,17 +128,10 @@ class StockMove(models.Model):
         readonly=True,
     )
 
-    @api.onchange('product_id', 'currency_rate_usd')
-    def _onchange_pvp_usd_from_product_id(self):
+    @api.depends('pvp_usd', 'currency_rate_usd')
+    def _compute_pvp_rd(self):
         for record in self:
-            record.pvp_usd = record.product_id.lst_price / record.currency_rate_usd
-            record.update({'pvp_usd': record.pvp_usd})
-
-    @api.onchange('pvp_usd', 'currency_rate_usd')
-    def _onchange_pvp_rd_from_pvp_usd(self):
-        for record in self:
-            record.pvp_rd = record.pvp_usd / record.currency_rate_usd
-            record.update({'pvp_rd': record.pvp_rd})
+            record.pvp_rd = record.pvp_usd * record.currency_rate_usd
 
     @api.depends_context('landed_cost_date', 'date')
     def _compute_rate_usd(self):
@@ -221,25 +214,32 @@ class StockMove(models.Model):
         )
 
     def get_lst_price_from_product(self, vals, date=None):
-        date = date or self.get_date_from_landed_cost()
+        picking_id = vals.get('picking_id')
+        purchase_line_id = vals.get('purchase_line_id')
+
+        purchase_order_id = (
+            picking_id and self.env['stock.picking'].browse(picking_id).purchase_id
+        ) or (
+            purchase_line_id and self.env['purchase.order.line'].browse(purchase_line_id).order_id
+        )
+
+        if purchase_order_id:
+            currency_rate = purchase_order_id.currency_rate
+        else:
+            currency_rate = self.env["res.currency"].with_context({
+                'date': date or self.get_date_from_landed_cost(),
+            }).search([("name", "=", "USD")]).rate
+
         product = self.env['product.product'].browse(vals.get('product_id'))
-        currency_usd = self.env["res.currency"].with_context({
-            'date': date,
-        }).search([("name", "=", "USD")], limit=1)
-
-        data = {"pvp_rd": product.lst_price or 0.0}
-        if currency_usd:
-            data.update({"pvp_usd": data["pvp_rd"] * currency_usd.rate})
-
-        return data
+        return product.list_price * currency_rate
 
     @api.model
     def create(self, vals_list):
         if isinstance(vals_list, dict):
-            vals_list.update(self.get_lst_price_from_product(vals_list))
+            vals_list['pvp_usd'] = self.get_lst_price_from_product(vals_list)
         elif isinstance(vals_list, list):
             for vals in vals_list:
-                vals.update(self.get_lst_price_from_product(vals_list))
+                vals['pvp_usd'] = self.get_lst_price_from_product(vals)
         return super().create(vals_list)
 
 

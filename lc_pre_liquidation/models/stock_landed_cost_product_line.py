@@ -135,7 +135,7 @@ class StockLandedCostProductLine(models.Model):
     def _onchange_product_id(self):
         if self.product_id:
             self.price_unit = self.product_id.standard_price / self.cost_id.currency_rate_usd
-            self.description = self.product_id.name
+            self.description = self.product_id.display_name
         else:
             self.price_unit = 0.0
             self.description = ''

@@ -197,6 +197,7 @@ class StockLandedCost(models.Model):
 
             vals = {
                 'product_id': line.product_id.id,
+                'description': (line.product_id and line.product_id.display_name) or line.description,
                 'quantity': line.quantity,
                 'former_cost': line.total,
             }
@@ -305,6 +306,7 @@ class StockLandedCost(models.Model):
                 'name': self.name,
                 'landed_cost_id': self.id,
                 'product_id': line.product_id and line.product_id.id,
+                'description': line.description,
                 'quantity': line.quantity,
                 'actual_cost': value,
                 'additional_cost': additional_cost,
