@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+<data>
+
+    <record model="ir.ui.view" id="view_stock_type_activities">
+        <field name="name">stock.picking.type.activities</field>
+        <field name="model">stock.picking.type</field> 
+        <field name="inherit_id" ref="stock.view_picking_type_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="sheet/group[2]" position="after">
+                <group string="Actividades" attrs="{'invisible':[('code','!=','outgoing')]}">
+                
+                 
+                         <group>
+                            <field name="activity_type"/>
+                            <field name="activity_summary" placeholder="por ejemplo: conversación de una propuesta"/>
+                         </group>
+                        <group>
+                            <group>
+                                <field name="activity_time_range"/>
+                            </group>
+                            <group>
+                                <field name="activity_date_range" nolabel="1"/>
+                            </group>
+                         </group>
+                                   
+
+                    
+                </group>
+            </xpath>
+        </field>
+    </record>  
+
+
+</data>
+</odoo>

@@ -19,10 +19,11 @@
     'license': 'Other proprietary',
 
     # any module necessary for this one to work correctly
-    'depends': ['base'],
+    'depends': ['base','stock'],
 
     # always loaded
     'data': [
+        'views/stock_type_views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
