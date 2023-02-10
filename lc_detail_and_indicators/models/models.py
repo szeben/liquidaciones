@@ -128,10 +128,13 @@ class StockMove(models.Model):
         readonly=True,
     )
 
-    @api.depends('pvp_usd', 'currency_rate_usd')
+    @api.depends('pvp_usd', 'currency_rate_usd', 'purchase_order_id')
     def _compute_pvp_rd(self):
         for record in self:
-            record.pvp_rd = record.pvp_usd * record.currency_rate_usd
+            record.pvp_rd = record.pvp_usd * (
+                (record.purchase_order_id and record.purchase_order_id.currency_rate)
+                or record.currency_rate_usd
+            )
 
     @api.depends_context('landed_cost_date', 'date')
     def _compute_rate_usd(self):
