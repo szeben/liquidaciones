@@ -32,15 +32,15 @@ class StockProductDetail(models.Model):
         required=True
     )
     actual_cost = fields.Monetary(
-        string='Costo actual unitario',
+        string='Costo actual unitario USD',
         readonly=True
     )
     additional_cost = fields.Monetary(
-        string=u'Costo de Importación',
+        string=u'Costo de Importación USD',
         readonly=True
     )
     new_cost = fields.Monetary(
-        string=u'Nuevo Costo',
+        string=u'Nuevo Costo USD',
         readonly=True,
     )
     currency_id = fields.Many2one(
