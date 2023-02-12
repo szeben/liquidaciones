@@ -132,7 +132,7 @@ class StockMove(models.Model):
     def _compute_pvp_rd(self):
         for record in self:
             record.pvp_rd = record.pvp_usd * (
-                (record.purchase_order_id and record.purchase_order_id.currency_rate)
+                (record.purchase_order_id and (1/record.purchase_order_id.currency_rate))
                 or record.currency_rate_usd
             )
 
