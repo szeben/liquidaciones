@@ -11,7 +11,7 @@ class StockTypeExtendido(models.Model):
     mail_act = fields.Many2one(comodel_name="mail.activity", string="Actividad")
     #activity_res_model_id = fields.Char(related="mail_act.res_model_id", store=True, readonly=False)
     activity_type_id = fields.Many2one(related='mail_act.activity_type_id', string='Tipo de Actividad',
-                                       store=True, readonly=False,
+                                       store=True, readonly=False, 
                                        domain="['|', ('res_model', '=', False), ('res_model', '=', 'stock.picking')]")
 
     activity_summary = fields.Char(related="mail_act.summary", string="Resumen", store=True, readonly=False)

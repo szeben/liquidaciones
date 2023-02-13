@@ -5,12 +5,13 @@ from datetime import datetime
 class StockPickingExtendido(models.Model):
     _inherit = "stock.picking"
              
-    @api.model
+    @api.model_create_multi
     def create(self, vals):
         res = super().create(vals)
-        res.escribir_actividad()    
+        res.escribir_actividad()
         return res
-
+            
+  
 
     def escribir_actividad(self):
         type_id = self.picking_type_id
