@@ -46,19 +46,7 @@ class StockTypeExtendido(models.Model):
                 raise ValidationError('Rango de meses inválido (hasta 5 años).')
             elif date == 'years' and time > 5:
                 raise ValidationError('Rango de años inválido (hasta 5 años).') 
-                    
-                
-    def get_due(self,time):
-        self.activity_date = datetime.strptime(str(time), '%Y-%m-%d')
-        if self.activity_date_range == 'days':
-            self.activity_date += relativedelta(days =+ self.activity_time_range)
-        elif self.activity_date_range == 'months':
-            self.activity_date += relativedelta(months =+ self.activity_time_range)
-        elif self.activity_date_range == 'years':
-            self.activity_date += relativedelta(years =+ self.activity_time_range) 
-        return self.activity_date
-        
-                
+  
     
     #user, NO es necesario   
     activity_user_field_name = fields.Char('Usuario', default="user_id", required=True, store=True)
