@@ -19,13 +19,12 @@ class StockTypeExtendido(models.Model):
     
     #dates
     activity_date = fields.Date(related="mail_act.date_deadline", string="Fecha de Vencimiento", store=True, readonly=False, default=datetime.strptime(str(fields.Date.today()), '%Y-%m-%d'))
-    activity_time_range = fields.Integer(default=1, string="Fecha de Vencimiento en", required=True)
+    activity_time_range = fields.Integer(default=1, string="Fecha de Vencimiento en")
     activity_date_range = fields.Selection([
         ('days', 'Día(s)'),
         ('months', 'Mes(es)'),
         ('years', 'Año(s)')], 
         default="days",
-        required=True,
     )
 
     
@@ -48,14 +47,10 @@ class StockTypeExtendido(models.Model):
                 raise ValidationError('Rango de años inválido (hasta 5 años).') 
                     
 
+
     
-    #user, NO es necesario   
-    activity_user_field_name = fields.Char('Usuario', default="user_id", required=True, store=True)
-    activity_user_type = fields.Selection([
-        ('specific', 'Specific User'),
-        ('generic', 'Generic User From Record')], default="generic", required=True, store=True)
-    
-    
+    # user
+    #activity_user = fields.Many2one('mail_act.user_id', default=lambda self: self.env.user, index=True)
 
                 
                 

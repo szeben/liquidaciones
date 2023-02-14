@@ -14,22 +14,20 @@
                          <group>
                             <!--field name="activity_res_model" invisible="1"/-->
                             <field name="activity_type_id" options="{'no_create': True, 'no_open': True}" 
-                                   can_create="true" can_write="true"/>
-                            <field name="activity_summary" placeholder="por ejemplo: conversación de una propuesta"/>
+                                   can_create="true" can_write="true" required="True"/>
+                            <field name="activity_summary" placeholder="por ejemplo: conversación de una propuesta" 
+                                   required="True"/>
                          </group>
                         <group>
                             <group>
-                                <field name="activity_time_range"/>
+                                <field name="activity_time_range" required="True"/>
                             </group>
                             <group>
-                                <field name="activity_date_range" nolabel="1"/>
+                                <field name="activity_date_range" required="True" nolabel="1"/>
                             </group>
                          </group>
                     
-                    
-                        <!--field name="activity_user_id" invisible="1"/-->
-                        <field name="activity_user_type" invisible="1"/>
-                        <field name="activity_user_field_name" invisible="1"/>
+
 
                 </group>
             </xpath>
