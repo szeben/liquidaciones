@@ -32,7 +32,7 @@ class StockLandedCostProductLine(models.Model):
         default=1.0
     )
     price_unit = fields.Monetary(
-        string='Precio Unitario USD',
+        string='Costo unitario USD',
         currency_field='currency_id',
         required=True
     )

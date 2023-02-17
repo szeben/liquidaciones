@@ -10,7 +10,7 @@
 
                     <h2 class="mt16">
                         <t>
-                            <span>Costo de Envio # </span>
+                            <span>Preliquidación # </span>
                         </t>
                         <span t-field="o.name"/>
                     </h2>
@@ -46,7 +46,7 @@
                             <t t-foreach="o.cost_lines" t-as="line">
                                 <tr t-att-key="line_index">
                                     <td name="td_product_id">
-                                        <span t-field="line.product_id"/>
+                                        <span t-field="line.description"/>
                                     </td>
                                     <td name="td_description">
                                         <span t-field="line.name"/>
@@ -62,7 +62,7 @@
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="4" class="text-right">
+                                <td colspan="3" class="text-right">
                                     <b>Monto Total</b>
                                 </td>
                                 <td class="text-right">

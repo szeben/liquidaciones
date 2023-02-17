@@ -39,7 +39,7 @@ class StockLandedCost(models.Model):
                 continue
 
             additional_cost = line.additional_landed_cost / line.quantity
-            value = line.former_cost/line.quantity
+            value = line.former_cost / line.quantity
 
             self.env['stock.product.detail'].create({
                 'name': self.name,
@@ -109,8 +109,10 @@ class StockLandedCost(models.Model):
                             towrite_dict[valuation.id] = value
                         else:
                             towrite_dict[valuation.id] += value
+
         for key, value in towrite_dict.items():
             AdjustementLines.browse(key).write({'additional_landed_cost': value})
+
         return result
 
 

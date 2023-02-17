@@ -10,7 +10,9 @@
         <tree multi_edit="1" sample="1" create="0" edit="1" delete="0">
           <field name="item"/>
           <field name="quantity" string="Qty" readonly="1"/>
-          <field name="product_id" string="Descripción" readonly="1" optional="show"/>
+          <field name="product_id" readonly="1" optional="hide"/>
+          <field name="description" readonly="1" optional="show"/>
+          <field name="currency_rate_usd" readonly="1" optional="show"/>
           <field name="price_unit" string="C/U US$" optional="show"/>
           <field name="price_unit_usd" sum="Total" optional="show"/>
           <field name="price_unit_rd" optional="show"/>
@@ -43,7 +45,8 @@
               <group>
                 <!-- <field name="item"/> -->
                 <field name="quantity" string="Qty" readonly="1"/>
-                <field name="product_id" string="Descripción" readonly="1"/>
+                <field name="description" readonly="1"/>
+                <field name="currency_rate_usd" readonly="1"/>
                 <field name="price_unit" string="C/U US$" readonly="1"/>
                 <field name="price_unit_usd"/>
                 <field name="price_unit_rd"/>
