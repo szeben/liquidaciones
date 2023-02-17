@@ -3,13 +3,11 @@
 
 import json
 from collections import OrderedDict, defaultdict
-from functools import reduce
 from statistics import mean, median
 
 from odoo import _, api, fields, models, tools
 from odoo.exceptions import UserError
 from odoo.tools.float_utils import float_is_zero
-
 
 SPLIT_METHOD = [
     ('equal', 'Equal'),
@@ -237,7 +235,6 @@ class StockLandedCost(models.Model):
             total_line = 0.0
             all_val_line_values = cost.get_valuation_lines()
 
-
             for val_line_values in all_val_line_values:
                 for cost_line in cost.cost_lines:
                     val_line_values.update({'cost_id': cost.id, 'cost_line_id': cost_line.id})
@@ -295,6 +292,8 @@ class StockLandedCost(models.Model):
         StockProductDetail = self.env['pre.stock.product.detail']
         StockProductDetail.search([('landed_cost_id', 'in', self.ids)]).unlink()
 
+        details = defaultdict(lambda: defaultdict(lambda: {}))
+
         for line in self.valuation_adjustment_lines:
             if (line.product_id and line.product_id.type != 'product'):
                 continue
@@ -302,16 +301,25 @@ class StockLandedCost(models.Model):
             additional_cost = line.additional_landed_cost / line.quantity
             value = line.former_cost / line.quantity
 
-            StockProductDetail.create({
-                'name': self.name,
-                'landed_cost_id': self.id,
-                'product_id': line.product_id and line.product_id.id,
-                'description': line.description,
-                'quantity': line.quantity,
-                'actual_cost': value,
-                'additional_cost': additional_cost,
-                'new_cost': value + additional_cost,
-            })
+            if value not in details[line.description][line.quantity]:
+                details[line.description][line.quantity][value] = {
+                    'name': self.name,
+                    'landed_cost_id': self.id,
+                    'product_id': line.product_id and line.product_id.id,
+                    'description': line.description,
+                    'quantity': line.quantity,
+                    'actual_cost': value,
+                    'additional_cost': additional_cost,
+                    'new_cost': value + additional_cost,
+                }
+            else:
+                details[line.description][line.quantity][value]['additional_cost'] += additional_cost
+                details[line.description][line.quantity][value]['new_cost'] += additional_cost
+
+        for data_description in details.values():
+            for data_qty in data_description.values():
+                for amount_cost in data_qty.values():
+                    StockProductDetail.create(amount_cost)
 
         return True
 
