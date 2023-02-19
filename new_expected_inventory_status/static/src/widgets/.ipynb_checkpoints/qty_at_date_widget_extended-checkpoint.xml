@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<template id="template" xml:space="preserve">
+
+    <!-- TODO: rename this to QtyAtDate in master version -->
+    <t t-name="new_expected_inventory_status.qtyAtDateExtension" owl="1">
+        <div t-att-class="!props.record.data.display_qty_widget ? 'invisible' : ''">
+            <a tabindex="0" t-on-click="showPopup" t-attf-class="fa fa-area-chart {{ calcData.icon_color }}"/>
+        </div>
+    </t>
+
+
+</template>

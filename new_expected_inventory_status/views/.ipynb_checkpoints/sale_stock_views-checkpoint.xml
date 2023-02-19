@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+<data>
+
+    <record model="ir.ui.view" id="view_order_form_inherit_sale_stock_qty_extension">
+        <field name="name">sale.order.line.tree.sale.stock.qty</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_stock.view_order_form_inherit_sale_stock_qty"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page/field[@name='order_line']/tree/widget[@name='qty_at_date_widget']" position="replace">
+                <widget name="qty_at_date_widget_extended" width="20px"/>
+            </xpath>
+        </field>
+    </record>     
+
+</data>
+</odoo>
