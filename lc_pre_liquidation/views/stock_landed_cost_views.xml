@@ -14,7 +14,7 @@
                     </header>
                     <sheet>
                         <div class="oe_button_box" name="button_box">
-                            <button type="object" name="action_view_closeouts_detail" class="oe_stat_button" icon="fa-area-chart" groups="stock.group_stock_manager">
+                            <button type="object" name="action_view_closeouts_detail" class="oe_stat_button" icon="fa-area-chart" groups="purchase.group_purchase_manager">
                                 <div class="o_field_widget o_stat_info">
                                     <span class="o_stat_value">
                                         <field name="total_closeouts"/>
@@ -34,7 +34,12 @@
                                 <field name="date"/>
                             </group>
                             <group>
-                                <field name="currency_rate_usd"/>
+                                <field name="show_update_costlist" invisible="1"/>
+                                <label for="currency_rate_usd"/>
+                                <div class="o_row">
+                                    <field name="currency_rate_usd"/>
+                                    <button name="update_costs" type="object" string=" Actualizar costos" help="Recalcular todos los costos asociados a las lineas de productos" class="btn-link mb-1 px-0" icon="fa-refresh" confirm="This will update all unit costs based on the currently set costlist." attrs="{'invisible': ['|', ('show_update_costlist', '=', False), ('state', 'in', ['done','cancel'])]}"/>
+                                </div>
                             </group>
                         </group>
                         <notebook>

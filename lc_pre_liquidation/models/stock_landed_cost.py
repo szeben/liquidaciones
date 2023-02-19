@@ -94,7 +94,8 @@ class StockLandedCost(models.Model):
         default=lambda self: self.env["res.currency"].with_context(
             date=self.date
         ).search([('name', '=', 'USD')]).inverse_rate,
-        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}
+        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]},
+        readonly=False,
     )
     product_detail_ids = fields.One2many(
         comodel_name='pre.stock.product.detail',
@@ -103,11 +104,15 @@ class StockLandedCost(models.Model):
         copy=False,
         states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}
     )
+    show_update_costlist = fields.Boolean(
+        string='Has Costlist Changed',
+        default=False,
+    )
 
     # Detail
     total_closeouts = fields.Integer(
         string="Total de liquidaciones",
-        compute="_compute_total_closeouts",
+        compute="_compute_detail_metrics",
         readonly=True,
     )
     factor = fields.Float(
@@ -131,13 +136,24 @@ class StockLandedCost(models.Model):
         readonly=True,
     )
 
+    def read(self, fields=None, load='_classic_read'):
+        for i in self:
+            print(i.currency_rate_usd)
+        print("==========================================")
+        res = super().read(fields, load)
+        for i in self:
+            print(i.currency_rate_usd)
+        return res
+
     @api.onchange('date')
     def _onchange_date(self):
-        for cost in self:
-            cost.currency_rate_usd = self.env["res.currency"].with_context(
-                date=cost.date
-            ).search([('name', '=', 'USD')]).inverse_rate
-            cost.update({"currency_rate_usd": cost.currency_rate_usd})
+        self.currency_rate_usd = self.env["res.currency"].with_context(
+            date=self.date
+        ).search([('name', '=', 'USD')]).inverse_rate
+
+    @api.onchange("currency_rate_usd")
+    def _onchange_currency_rate_usd(self):
+        self.show_update_costlist = True
 
     @api.depends('cost_lines.price_unit')
     def _compute_total_amount(self):
@@ -215,6 +231,26 @@ class StockLandedCost(models.Model):
                 "can only be applied for products with FIFO or average costing method."
             ))
         return lines
+
+    def update_costs(self):
+        self.ensure_one()
+        lines_to_update = []
+
+        for line in self.product_lines:
+            if not line.product_id:
+                continue
+
+            cost = line.product_id.standard_price / self.currency_rate_usd
+            lines_to_update.append((1, line.id, {'price_unit': cost}))
+
+        self.update({'product_lines': lines_to_update})
+        self.show_update_costlist = False
+        self.message_post(
+            body=_(
+                "Product prices have been recomputed according to pricelist <b>%s<b> ",
+                self.currency_rate_usd
+            )
+        )
 
     def compute_landed_cost(self):
         AdjustementLines = self.env['pre.stock.valuation.adjustment.lines']
@@ -352,13 +388,10 @@ class StockLandedCost(models.Model):
         return True
 
     @api.depends('product_lines')
-    def _compute_total_closeouts(self):
+    def _compute_detail_metrics(self):
         for record in self:
             record.total_closeouts = len(record.product_lines.ids)
 
-    @api.depends('product_lines')
-    def _compute_detail_metrics(self):
-        for record in self:
             if self.product_lines:
                 record.factor = self.product_lines[0].factor
 
