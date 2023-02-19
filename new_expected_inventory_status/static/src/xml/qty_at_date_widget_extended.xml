@@ -1,0 +1,7 @@
+<templates>
+    <div t-name="new_expected_inventory_status.qtyAtDate">
+        <div t-att-class="!widget.data.display_qty_widget ? 'invisible' : ''">
+            <a tabindex="0" t-attf-class="fa fa-area-chart {{ widget.data.icon_color }}"/>
+        </div>
+    </div>
+</templates>

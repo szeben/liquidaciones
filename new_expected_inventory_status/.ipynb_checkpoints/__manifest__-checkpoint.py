@@ -30,7 +30,10 @@
     ],
     'assets': {
         'web.assets_backend': [
-            'new_expected_inventory_status/static/src/widgets/**/*',
+            'new_expected_inventory_status/static/src/js/**/*',
+        ],
+        'web.assets_qweb': [
+            'new_expected_inventory_status/static/src/xml/**/*',
         ],
     },
 }
