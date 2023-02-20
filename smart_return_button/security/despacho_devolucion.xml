@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="group_despacho_directo" model="res.groups">
+            <field name="name">Despacho Directo</field>
+            <field name="category_id" ref="base.module_category_inventory_inventory" />
+            <field name="comment">Permite realizar despachos de mercancía directamente desde una orden de venta. Creado por: Techne.</field>
+        </record>
+
+        <record id="group_devolucion_directa" model="res.groups">
+            <field name="name">Devolución Directa</field>
+            <field name="category_id" ref="base.module_category_inventory_inventory" />
+            <field name="comment">Permite acceder a los despachos de mercancía realizados, directamente desde una orden de venta, para hacer devoluciones. Creado por: Techne.</field>
+        </record>
+
+    </data>
+</odoo>
