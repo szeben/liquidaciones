@@ -55,11 +55,11 @@ var QtyAtDateWidgetExtension = Widget.extend({
             }
         }
        if (this.data.free_qty_today > this.data.qty_to_deliver){
-            this.calcData.icon_color = 'text-primary';
+            this.data.icon_color = 'text-primary';
         }else if (this.data.free_qty_today == this.data.qty_to_deliver){
-            this.calcData.icon_color = 'text-warning';
+            this.data.icon_color = 'text-warning';
         }else{
-            this.calcData.icon_color = 'text-danger';
+            this.data.icon_color = 'text-danger';
         } 
     },
     
