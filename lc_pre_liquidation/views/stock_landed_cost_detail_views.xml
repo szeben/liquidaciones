@@ -12,7 +12,7 @@
           <field name="quantity" string="Qty" readonly="1"/>
           <field name="product_id" readonly="1" optional="hide"/>
           <field name="description" readonly="1" optional="show"/>
-          <field name="currency_rate_usd" readonly="1" optional="show"/>
+          <field name="rate" readonly="1" optional="show"/>
           <field name="price_unit" string="C/U US$" optional="show"/>
           <field name="price_unit_usd" sum="Total" optional="show"/>
           <field name="price_unit_rd" optional="show"/>
@@ -46,7 +46,7 @@
                 <!-- <field name="item"/> -->
                 <field name="quantity" string="Qty" readonly="1"/>
                 <field name="description" readonly="1"/>
-                <field name="currency_rate_usd" readonly="1"/>
+                <field name="rate" readonly="1"/>
                 <field name="price_unit" string="C/U US$" readonly="1"/>
                 <field name="price_unit_usd"/>
                 <field name="price_unit_rd"/>

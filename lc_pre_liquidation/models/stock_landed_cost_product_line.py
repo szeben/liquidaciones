@@ -54,9 +54,9 @@ class StockLandedCostProductLine(models.Model):
         compute="_compute_totals",
         readonly=True,
     )
-    currency_rate_usd = fields.Float(
+    rate = fields.Float(
         string="Tasa USD",
-        related="cost_id.currency_rate_usd",
+        related="cost_id.rate",
         readonly=True,
     )
     price_unit_usd = fields.Float(
@@ -102,7 +102,7 @@ class StockLandedCostProductLine(models.Model):
     )
     pvp_usd = fields.Float(
         string="PVP US$",
-        default=lambda self: (self.product_id and (self.product_id.lst_price * self.cost_id.currency_rate_usd)) or 0.0,
+        default=lambda self: (self.product_id and (self.product_id.lst_price / self.cost_id.rate)) or 0.0,
     )
     pvp_rd = fields.Float(
         string="PVP RD",
@@ -131,23 +131,23 @@ class StockLandedCostProductLine(models.Model):
         for line in self:
             line.total = line.quantity * line.price_unit
 
-    @api.onchange('product_id', 'cost_id.currency_rate_usd')
+    @api.onchange('product_id')
     def _onchange_product_id(self):
         if self.product_id:
-            self.price_unit = self.product_id.standard_price / self.cost_id.currency_rate_usd
+            self.price_unit = self.product_id.standard_price / self.cost_id.rate
             self.description = self.product_id.display_name
         else:
             self.price_unit = 0.0
-            self.description = ''
+            self.description = None
 
         self.update({"price_unit": self.price_unit, "description": self.description})
 
-    @api.depends('currency_rate_usd', 'price_unit', 'quantity')
+    @api.depends('rate', 'price_unit', 'quantity')
     def _compute_totals(self):
         for item, record in enumerate(self, start=1):
             record.item = item
             record.price_unit_usd = record.price_unit * record.quantity
-            record.price_unit_rd = record.price_unit * record.currency_rate_usd
+            record.price_unit_rd = record.price_unit * record.rate
             record.amount_total_rd = record.price_unit_rd * record.quantity
 
     @api.depends('cost_id', 'cost_id.amount_total')
@@ -159,21 +159,21 @@ class StockLandedCostProductLine(models.Model):
         else:
             self.factor = 1.0
 
-    @api.depends('price_unit', 'currency_rate_usd', 'factor', 'quantity')
+    @api.depends('price_unit', 'rate', 'factor', 'quantity')
     def _compute_current_totals(self):
         for record in self:
             record.current_price_unit_rd = record.price_unit * record.factor
             record.current_total_rd = record.current_price_unit_rd * record.quantity
             record.current_price_unit_usd = (
-                record.current_price_unit_rd / record.currency_rate_usd
-                if record.currency_rate_usd else 0.0
+                record.current_price_unit_rd / record.rate
+                if record.rate else 0.0
             )
             record.current_total_usd = record.current_price_unit_usd * record.quantity
 
-    @api.depends('currency_rate_usd', 'pvp_usd')
+    @api.depends('rate', 'pvp_usd')
     def _compute_pvp(self):
         for record in self:
-            record.pvp_rd = record.pvp_usd * record.currency_rate_usd
+            record.pvp_rd = record.pvp_usd * record.rate
 
     @api.depends('pvp_usd', 'pvp_rd', 'current_price_unit_usd', 'current_price_unit_rd', 'quantity')
     def _compute_extra_indicators(self):
@@ -195,7 +195,7 @@ class StockLandedCostProductLine(models.Model):
                 cost_id = self.env['pre.stock.landed.cost'].browse(cost_id)
                 product = self.env['product.product'].browse(product_id)
                 if cost_id:
-                    pvp_usd = product.list_price / cost_id.currency_rate_usd
+                    pvp_usd = product.list_price / cost_id.rate
             else:
                 pvp_usd = vals.get('price_unit') or 0.0
 

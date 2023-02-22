@@ -46,7 +46,7 @@
                             <t t-foreach="o.cost_lines" t-as="line">
                                 <tr t-att-key="line_index">
                                     <td name="td_product_id">
-                                        <span t-field="line.description"/>
+                                        <span t-field="line.product_id"/>
                                     </td>
                                     <td name="td_description">
                                         <span t-field="line.name"/>

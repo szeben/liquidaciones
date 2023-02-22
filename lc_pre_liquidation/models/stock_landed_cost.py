@@ -88,14 +88,18 @@ class StockLandedCost(models.Model):
         string='Product Lines',
         states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}
     )
-    currency_rate_usd = fields.Float(
+    rate = fields.Float(
         string='Tasa de cambio',
         digits=(12, 6),
         default=lambda self: self.env["res.currency"].with_context(
             date=self.date
         ).search([('name', '=', 'USD')]).inverse_rate,
         states={'done': [('readonly', True)], 'cancel': [('readonly', True)]},
-        readonly=False,
+        required=True
+    )
+    currency_rate_usd = fields.Float(
+        string='Tasa de cambio ',
+        related='currency_id.rate',
     )
     product_detail_ids = fields.One2many(
         comodel_name='pre.stock.product.detail',
@@ -136,23 +140,14 @@ class StockLandedCost(models.Model):
         readonly=True,
     )
 
-    def read(self, fields=None, load='_classic_read'):
-        for i in self:
-            print(i.currency_rate_usd)
-        print("==========================================")
-        res = super().read(fields, load)
-        for i in self:
-            print(i.currency_rate_usd)
-        return res
-
     @api.onchange('date')
-    def _onchange_date(self):
-        self.currency_rate_usd = self.env["res.currency"].with_context(
+    def _onchange_date_landed_cost(self):
+        self.rate = self.env["res.currency"].with_context(
             date=self.date
         ).search([('name', '=', 'USD')]).inverse_rate
 
-    @api.onchange("currency_rate_usd")
-    def _onchange_currency_rate_usd(self):
+    @api.onchange("rate")
+    def _onchange_currency_rate_usd_landed_cost(self):
         self.show_update_costlist = True
 
     @api.depends('cost_lines.price_unit')
@@ -240,7 +235,7 @@ class StockLandedCost(models.Model):
             if not line.product_id:
                 continue
 
-            cost = line.product_id.standard_price / self.currency_rate_usd
+            cost = line.product_id.standard_price / self.rate
             lines_to_update.append((1, line.id, {'price_unit': cost}))
 
         self.update({'product_lines': lines_to_update})
@@ -248,7 +243,7 @@ class StockLandedCost(models.Model):
         self.message_post(
             body=_(
                 "Product prices have been recomputed according to pricelist <b>%s<b> ",
-                self.currency_rate_usd
+                self.rate
             )
         )
 

@@ -35,10 +35,10 @@
                             </group>
                             <group>
                                 <field name="show_update_costlist" invisible="1"/>
-                                <label for="currency_rate_usd"/>
+                                <label for="rate"/>
                                 <div class="o_row">
-                                    <field name="currency_rate_usd"/>
-                                    <button name="update_costs" type="object" string=" Actualizar costos" help="Recalcular todos los costos asociados a las lineas de productos" class="btn-link mb-1 px-0" icon="fa-refresh" confirm="This will update all unit costs based on the currently set costlist." attrs="{'invisible': ['|', ('show_update_costlist', '=', False), ('state', 'in', ['done','cancel'])]}"/>
+                                    <field name="rate"/>
+                                    <button name="update_costs" type="object" string=" Actualizar costos" help="Recalcular todos los costos asociados a las lineas de productos" class="btn-link mb-1 px-0" icon="fa-refresh" confirm="Esto actualizará todos los costos unitarios según la tasa de cambio indicada." attrs="{'invisible': ['|', ('show_update_costlist', '=', False), ('state', 'in', ['done','cancel'])]}"/>
                                 </div>
                             </group>
                         </group>
