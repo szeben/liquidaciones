@@ -20,8 +20,10 @@ class StockProductDetail(models.Model):
     )
     product_id = fields.Many2one(
         'product.product',
-        string='Producto',
-        required=True
+        string='Producto'
+    )
+    description = fields.Char(
+        string='Descripción'
     )
     quantity = fields.Float(
         string='Cantidad',
@@ -29,15 +31,19 @@ class StockProductDetail(models.Model):
         digits=dp.get_precision('Product Unit of Measure'),
         required=True
     )
-    actual_cost = fields.Float(
-        string='Costo actual unitario',
+    actual_cost = fields.Monetary(
+        string='Costo actual unitario USD',
         readonly=True
     )
-    additional_cost = fields.Float(
-        string=u'Costo de Importación',
+    additional_cost = fields.Monetary(
+        string=u'Costo de Importación USD',
         readonly=True
     )
-    new_cost = fields.Float(
-        string=u'Nuevo Costo',
-        readonly=True
+    new_cost = fields.Monetary(
+        string=u'Nuevo Costo USD',
+        readonly=True,
+    )
+    currency_id = fields.Many2one(
+        'res.currency',
+        related='landed_cost_id.currency_id'
     )

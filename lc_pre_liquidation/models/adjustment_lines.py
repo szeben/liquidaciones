@@ -11,7 +11,16 @@ class AdjustmentLines(models.Model):
     cost_id = fields.Many2one(
         'pre.stock.landed.cost',
         string='Landed Cost',
-        ondelete='cascade', required=True
+        ondelete='cascade',
+        required=True
+    )
+    product_id = fields.Many2one(
+        'product.product', 
+        'Producto', 
+        required=False
+    )
+    description = fields.Char(
+        string='Descripción'
     )
     cost_line_id = fields.Many2one(
         'pre.stock.landed.cost.lines',
@@ -20,6 +29,10 @@ class AdjustmentLines(models.Model):
     )
     additional_landed_cost = fields.Monetary(
         string='Additional Landed Cost'
+    )
+    currency_id = fields.Many2one(
+        'res.currency', 
+        related='cost_id.currency_id'
     )
 
     @api.model

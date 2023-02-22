@@ -10,7 +10,7 @@
 
                     <h2 class="mt16">
                         <t>
-                            <span>Costo de Envio # </span>
+                            <span>Preliquidación # </span>
                         </t>
                         <span t-field="o.name"/>
                     </h2>
@@ -38,7 +38,6 @@
                             <tr>
                                 <th name="th_product_id" class="text-left">Producto</th>
                                 <th name="th_description" class="text-left">Descripción</th>
-                                <th name="th_account_id" class="text-left">Cuenta</th>
                                 <th name="th_split_method" class="text-left">Método de división</th>
                                 <th name="th_priceunit" class="text-right">Coste</th>
                             </tr>
@@ -52,9 +51,6 @@
                                     <td name="td_description">
                                         <span t-field="line.name"/>
                                     </td>
-                                    <td name="td_account_id">
-                                        <span t-field="line.account_id"/>
-                                    </td>
                                     <td name="td_split_method">
                                         <span t-field="line.split_method"/>
                                     </td>
@@ -66,7 +62,7 @@
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="4" class="text-right">
+                                <td colspan="3" class="text-right">
                                     <b>Monto Total</b>
                                 </td>
                                 <td class="text-right">

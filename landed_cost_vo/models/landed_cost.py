@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 from odoo import _, api, fields, models, tools
 from odoo.addons import decimal_precision as dp
+from odoo.exceptions import UserError
+
+from collections import defaultdict
 
 
 class AdjustmentLines(models.Model):
     _inherit = 'stock.valuation.adjustment.lines'
-    additional_landed_cost = fields.Monetary(
-        string='Additional Landed Cost')
+
+    additional_landed_cost = fields.Monetary(string='Additional Landed Cost')
+    picking_id = fields.Many2one('stock.picking', string='Transferencia', readonly=True)
 
 
 class StockLandedCost(models.Model):
@@ -28,28 +32,65 @@ class StockLandedCost(models.Model):
     TotalItbis = fields.Float(string='Total de ITBIS')
     TipoImportacion = fields.Selection(string='Tipo de Importación', selection=[('Local', 'Exterior')])
 
+    def get_valuation_lines(self):
+        self.ensure_one()
+        lines = []
+
+        for move in self._get_targeted_move_ids():
+            # it doesn't make sense to make a landed cost for a product that isn't set as being valuated in real time at real cost
+            if move.product_id.cost_method not in ('fifo', 'average') or move.state == 'cancel' or not move.product_qty:
+                continue
+            vals = {
+                'product_id': move.product_id.id,
+                'move_id': move.id,
+                'quantity': move.product_qty,
+                'former_cost': sum(move.stock_valuation_layer_ids.mapped('value')),
+                'weight': move.product_id.weight * move.product_qty,
+                'volume': move.product_id.volume * move.product_qty,
+                'picking_id': move.picking_id.id,
+            }
+            lines.append(vals)
+
+        if not lines:
+            target_model_descriptions = dict(self._fields['target_model']._description_selection(self.env))
+            raise UserError(_("You cannot apply landed costs on the chosen %s(s). Landed costs can only be applied for products with FIFO or average costing method.",
+                            target_model_descriptions[self.target_model]))
+        return lines
+
     def compute_landed_cost(self):
         result = super(StockLandedCost, self).compute_landed_cost()
         digits = 2
         detail_lines = self.env['stock.product.detail']
         detail_lines.search([('landed_cost_id', 'in', self.ids)]).unlink()
 
+        details = defaultdict(lambda: {})
+
         for line in self.valuation_adjustment_lines:
             if line.product_id.type != 'product':
                 continue
 
             additional_cost = line.additional_landed_cost / line.quantity
-            value = line.former_cost/line.quantity
 
-            self.env['stock.product.detail'].create({
-                'name': self.name,
-                'landed_cost_id': self.id,
-                'product_id': line.product_id.id,
-                'quantity': line.quantity,
-                'actual_cost': value,
-                'additional_cost': additional_cost,
-                'new_cost': value + additional_cost,
-            })
+            if line.product_id.id not in details[line.picking_id]:
+                value = line.former_cost / line.quantity
+
+                details[line.picking_id][line.product_id] = {
+                    'name': self.name,
+                    'landed_cost_id': self.id,
+                    'product_id': line.product_id.id,
+                    'quantity': line.quantity,
+                    'actual_cost': value,
+                    'additional_cost': additional_cost,
+                    'new_cost': value + additional_cost,
+                }
+
+            else:
+                details[line.picking_id][line.product_id]['additional_cost'] += additional_cost
+                details[line.picking_id][line.product_id]['new_cost'] += additional_cost
+
+        for data_pickinds in details.values():
+            for data_product in data_pickinds.values():
+                self.env['stock.product.detail'].create(data_product)
 
         AdjustementLines = self.env['stock.valuation.adjustment.lines']
         AdjustementLines.search([('cost_id', 'in', self.ids)]).unlink()
@@ -109,8 +150,10 @@ class StockLandedCost(models.Model):
                             towrite_dict[valuation.id] = value
                         else:
                             towrite_dict[valuation.id] += value
+
         for key, value in towrite_dict.items():
             AdjustementLines.browse(key).write({'additional_landed_cost': value})
+
         return result
 
 

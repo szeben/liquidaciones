@@ -3,13 +3,11 @@
 
 import json
 from collections import OrderedDict, defaultdict
-from functools import reduce
 from statistics import mean, median
 
 from odoo import _, api, fields, models, tools
 from odoo.exceptions import UserError
 from odoo.tools.float_utils import float_is_zero
-
 
 SPLIT_METHOD = [
     ('equal', 'Equal'),
@@ -90,13 +88,18 @@ class StockLandedCost(models.Model):
         string='Product Lines',
         states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}
     )
-    currency_rate_usd = fields.Float(
-        'Rate',
+    rate = fields.Float(
+        string='Tasa de cambio',
         digits=(12, 6),
         default=lambda self: self.env["res.currency"].with_context(
             date=self.date
         ).search([('name', '=', 'USD')]).inverse_rate,
-        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}
+        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]},
+        required=True
+    )
+    currency_rate_usd = fields.Float(
+        string='Tasa de cambio ',
+        related='currency_id.rate',
     )
     product_detail_ids = fields.One2many(
         comodel_name='pre.stock.product.detail',
@@ -105,11 +108,15 @@ class StockLandedCost(models.Model):
         copy=False,
         states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}
     )
+    show_update_costlist = fields.Boolean(
+        string='Has Costlist Changed',
+        default=False,
+    )
 
     # Detail
     total_closeouts = fields.Integer(
         string="Total de liquidaciones",
-        compute="_compute_total_closeouts",
+        compute="_compute_detail_metrics",
         readonly=True,
     )
     factor = fields.Float(
@@ -134,12 +141,14 @@ class StockLandedCost(models.Model):
     )
 
     @api.onchange('date')
-    def _onchange_date(self):
-        for cost in self:
-            cost.currency_rate_usd = self.env["res.currency"].with_context(
-                date=cost.date
-            ).search([('name', '=', 'USD')]).inverse_rate
-            cost.update({"currency_rate_usd": cost.currency_rate_usd})
+    def _onchange_date_landed_cost(self):
+        self.rate = self.env["res.currency"].with_context(
+            date=self.date
+        ).search([('name', '=', 'USD')]).inverse_rate
+
+    @api.onchange("rate")
+    def _onchange_currency_rate_usd_landed_cost(self):
+        self.show_update_costlist = True
 
     @api.depends('cost_lines.price_unit')
     def _compute_total_amount(self):
@@ -192,16 +201,23 @@ class StockLandedCost(models.Model):
 
         # TODO: this should be done in batch
         for line in self.product_lines:
-            if line.product_id.cost_method not in {'fifo', 'average'} or not line.quantity:
+            if (line.product_id and line.product_id.cost_method not in {'fifo', 'average'}) or not line.quantity:
                 continue
 
             vals = {
                 'product_id': line.product_id.id,
+                'description': (line.product_id and line.product_id.display_name) or line.description,
                 'quantity': line.quantity,
-                'former_cost': 0.0,
-                'weight': line.product_id.weight * line.quantity,
-                'volume': line.product_id.volume * line.quantity
+                'former_cost': line.total,
             }
+
+            if line.product_id:
+                vals['weight'] = line.product_id.weight * line.quantity
+                vals['volume'] = line.product_id.volume * line.quantity
+            else:
+                vals['weight'] = 0.0
+                vals['volume'] = 0.0
+
             lines.append(vals)
 
         if not lines:
@@ -210,6 +226,26 @@ class StockLandedCost(models.Model):
                 "can only be applied for products with FIFO or average costing method."
             ))
         return lines
+
+    def update_costs(self):
+        self.ensure_one()
+        lines_to_update = []
+
+        for line in self.product_lines:
+            if not line.product_id:
+                continue
+
+            cost = line.product_id.standard_price / self.rate
+            lines_to_update.append((1, line.id, {'price_unit': cost}))
+
+        self.update({'product_lines': lines_to_update})
+        self.show_update_costlist = False
+        self.message_post(
+            body=_(
+                "Product prices have been recomputed according to pricelist <b>%s<b> ",
+                self.rate
+            )
+        )
 
     def compute_landed_cost(self):
         AdjustementLines = self.env['pre.stock.valuation.adjustment.lines']
@@ -233,12 +269,11 @@ class StockLandedCost(models.Model):
             for val_line_values in all_val_line_values:
                 for cost_line in cost.cost_lines:
                     val_line_values.update({'cost_id': cost.id, 'cost_line_id': cost_line.id})
-                    self.env['pre.stock.valuation.adjustment.lines'].create(val_line_values)
+                    AdjustementLines.create(val_line_values)
 
                 total_qty += val_line_values.get('quantity', 0.0)
                 total_weight += val_line_values.get('weight', 0.0)
                 total_volume += val_line_values.get('volume', 0.0)
-
                 former_cost = val_line_values.get('former_cost', 0.0)
 
                 # round this because former_cost on the valuation lines is also rounded
@@ -285,25 +320,37 @@ class StockLandedCost(models.Model):
         for key, value in towrite_dict.items():
             AdjustementLines.browse(key).write({'additional_landed_cost': value})
 
-        detail_lines = self.env['pre.stock.product.detail']
-        detail_lines.search([('landed_cost_id', 'in', self.ids)]).unlink()
+        StockProductDetail = self.env['pre.stock.product.detail']
+        StockProductDetail.search([('landed_cost_id', 'in', self.ids)]).unlink()
+
+        details = defaultdict(lambda: defaultdict(lambda: {}))
 
         for line in self.valuation_adjustment_lines:
-            if line.product_id.type != 'product':
+            if (line.product_id and line.product_id.type != 'product'):
                 continue
 
             additional_cost = line.additional_landed_cost / line.quantity
-            value = line.former_cost/line.quantity
+            value = line.former_cost / line.quantity
 
-            self.env['pre.stock.product.detail'].create({
-                'name': self.name,
-                'landed_cost_id': self.id,
-                'product_id': line.product_id.id,
-                'quantity': line.quantity,
-                'actual_cost': value,
-                'additional_cost': additional_cost,
-                'new_cost': value + additional_cost,
-            })
+            if value not in details[line.description][line.quantity]:
+                details[line.description][line.quantity][value] = {
+                    'name': self.name,
+                    'landed_cost_id': self.id,
+                    'product_id': line.product_id and line.product_id.id,
+                    'description': line.description,
+                    'quantity': line.quantity,
+                    'actual_cost': value,
+                    'additional_cost': additional_cost,
+                    'new_cost': value + additional_cost,
+                }
+            else:
+                details[line.description][line.quantity][value]['additional_cost'] += additional_cost
+                details[line.description][line.quantity][value]['new_cost'] += additional_cost
+
+        for data_description in details.values():
+            for data_qty in data_description.values():
+                for amount_cost in data_qty.values():
+                    StockProductDetail.create(amount_cost)
 
         return True
 
@@ -336,13 +383,10 @@ class StockLandedCost(models.Model):
         return True
 
     @api.depends('product_lines')
-    def _compute_total_closeouts(self):
+    def _compute_detail_metrics(self):
         for record in self:
             record.total_closeouts = len(record.product_lines.ids)
 
-    @api.depends('product_lines')
-    def _compute_detail_metrics(self):
-        for record in self:
             if self.product_lines:
                 record.factor = self.product_lines[0].factor
 
