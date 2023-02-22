@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Creamos un grupo para alojar la siguiente regla:
+        res_partner_rule_private_employee,
+        que es la que nos da acceso a todos los contactos. Aqui pondremos todos los usuarios
+        existentes en la plataforma, para que Odoo los siga reconociendo como usuarios de res.users -->
+        <record model="res.groups" id="group_contact_user_2">
+            <field name="name">Usuario Interno 2</field>
+            <!-- <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/> -->
+            <!-- <field name="implied_ids" eval="[(6, 0, [ref('base.group_user')])]"/> -->
+            <!-- <field name="implied_ids" eval="[Command.link(ref('base.group_user'))]"/> -->
+            <field name="category_id" ref="base.module_category_usability"/>
+            <!-- <field name="users" eval="[
+            (4, ref('base.user_root')), 
+            (4, ref('base.user_admin')), 
+            (4, ref('base.default_user'))
+            ]"/> -->
+        </record>
+
+        <record model="ir.module.category" id="module_category_contactos">
+            <field name="name">Contactos</field>
+            <field name="description">Permite gestionar accesos a res_partner</field>
+        </record>
+
+        <record model="res.groups" id="group_contact_visualizar_proveedores">
+            <field name="name">Visualizar Proveedores</field>
+            <field name="comment">Permite visualizar proveedores desde el módulo de contacto. Creado por: Techne</field>
+            <field name="category_id" ref="module_category_contactos"/>
+        </record>
+
+        <record model="res.groups" id="group_contact_visualizar_proveedores_nacionales">
+            <field name="name">Visualizar Proveedores Nacionales</field>
+            <field name="comment">Permite visualizar los proveedores nacionales y sus órdenes de compra asociadas. Creado por: Techne</field>
+            <field name="category_id" ref="module_category_contactos"/>
+        </record>
+
+        <record model="res.groups" id="group_contact_visualizar_clientes">
+            <field name="name">Visualizar Clientes</field>
+            <field name="comment">Permite visualizar clientes desde el módulo de contacto. Creado por: Techne</field>
+            <field name="category_id" ref="module_category_contactos"/>
+        </record>
+
+        <record model="res.groups" id="group_contact_gestionar_proveedores">
+            <field name="name">Gestionar Proveedores</field>
+            <field name="comment">Permite crear, editar y eliminar proveedores. Creado por: Techne</field>
+            <field name="category_id" ref="module_category_contactos"/>
+        </record>
+
+        <record model="res.groups" id="group_contact_gestionar_clientes">
+            <field name="name">Gestionar Clientes</field>
+            <field name="comment">Permite crear, editar y eliminar clientes. Creado por: Techne</field>
+            <field name="category_id" ref="module_category_contactos"/>
+            <field name="implied_ids" eval="[(4, ref('group_contact_visualizar_clientes'))]"/>
+        </record>
+
+        <!--RULES-->
+
+        <!-- Las reglas primarias de cada grupo llevarán el dominio name = user.name para indicarle a la plataforma
+        que el usuario que esta logueado, también es un usuario perteneciente a la tabla res_partner.
+        Si no se hace así, Odoo reconocerá que no es un usuario y terminará la sesión automáticamente -->
+        <record id="res_partner_readonly_customer" model="ir.rule">
+            <field name="name">Solo: visualizar clientes</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="domain_force">['|', ('name', '=', user.name), ('customer_rank', '>', 0)]</field>
+            <field name="groups" eval="[(4, ref('group_contact_visualizar_clientes'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="res_partner_manager_customer" model="ir.rule">
+            <field name="name">Gestionar clientes</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="domain_force">['|', ('name', '=', user.name), ('customer_rank', '>', 0)]</field>
+            <field name="groups" eval="[(4, ref('group_contact_gestionar_clientes'))]"/>
+        </record>
+
+        <!-- La siguiente regla es para obtener el id de todos aquellos que crearon los clientes.
+        Esto es para que el usuario logueado pueda acceder a los registros de otros usuarios; si no,
+        Odoo aplicará una regla del sistema que no se pueden acceder a los registros de otros usuarios -->
+        <record id="res_partner_customer_get_creator_records" model="ir.rule">
+            <field name="name">Obtener el registro de los creadores de los partner: clientes</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="domain_force">[('id', 'in', user.env['res.partner'].search([('customer_rank', '>', 0)]).mapped('create_uid.partner_id').ids)]</field>
+            <field name="groups" eval="[
+            (4, ref('group_contact_visualizar_clientes')),
+            (4, ref('group_contact_gestionar_clientes'))
+            ]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="res_partner_readonly_national_supplier" model="ir.rule">
+            <field name="name">Solo: visualizar proveedores nacionales</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="domain_force">['|', ('name', '=', user.name), '&amp;', ('supplier_rank', '>', 0), ('proveedor_internat', '=', False)]</field>
+            <field name="groups" eval="[(4, ref('group_contact_visualizar_proveedores_nacionales'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- La siguiente regla es para obtener el id de todos aquellos que crearon los proveedores.
+        Esto es para que el usuario logueado pueda acceder a los registros de otros usuarios; si no,
+        Odoo aplicará una regla del sistema que no se pueden acceder a los registros de otros usuarios -->
+        <record id="res_partner_readonly_national_supplier_get_creator_records" model="ir.rule">
+            <field name="name">Obtener el registro de los creadores de los partner: solo visualizar proveedores nacionales</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="domain_force">[('id', 'in', user.env['res.partner'].search([('supplier_rank', '>', 0), ('proveedor_internat', '=', False)]).mapped('create_uid.partner_id').ids)]</field>
+            <field name="groups" eval="[
+            (4, ref('group_contact_visualizar_proveedores_nacionales')),
+            ]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="res_partner_readonly_international_supplier" model="ir.rule">
+            <field name="name">Solo: visualizar proveedores internacionales</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="domain_force">['|', ('name', '=', user.name), '&amp;', ('supplier_rank', '>', 0), ('proveedor_internat', '=', True)]</field>
+            <field name="groups" eval="[(4, ref('group_contact_visualizar_proveedores'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- La siguiente regla es parecida a la que está arriba, sólo que aqui traerá
+        los id de los usuarios que crearon proveedores con proveedor_internat = True (internacionales) -->
+        <record id="res_partner_readonly_international_supplier_get_creator_records" model="ir.rule">
+            <field name="name">Obtener el registro del creador de los partner: solo proveedores internacionales</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="domain_force">[('id', 'in', user.env['res.partner'].search([('supplier_rank', '>', 0), ('proveedor_internat', '=', True)]).mapped('create_uid.partner_id').ids)]</field>
+            <field name="groups" eval="[
+            (4, ref('group_contact_visualizar_proveedores')),
+            ]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="res_partner_manager_supplier" model="ir.rule">
+            <field name="name">Gestionar proveedores</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="domain_force">['|', ('name', '=', user.name), ('supplier_rank', '>', 0)]</field>
+            <field name="groups" eval="[(4, ref('group_contact_gestionar_proveedores'))]"/>
+        </record>
+
+        <!-- Al igual que las reglas para grupos_suppliers (proveedores), la siguiente regla
+        traera los ids de los creadores de los proveedores en res_partner. Todos. (internat = False or True)-->
+        <record id="res_partner_manager_supplier_get_creator_records" model="ir.rule">
+            <field name="name">Obtener el registro del creador de los partner: supplier manager</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="domain_force">[('id', 'in', user.env['res.partner'].search([('supplier_rank', '>', 0)]).mapped('create_uid.partner_id').ids)]</field>
+            <field name="groups" eval="[
+            (4, ref('group_contact_gestionar_proveedores')),
+            ]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- La siguiente regla se creó con el fin de poder darle acceso a los miembros de los grupos
+        creados en este módulo, a los registros que haya hecho cualquier res.users, así se podrá visualizar
+        ventas y compras de cualquier usuario sin ningún problema (ya que, se restringía los registros de acuerdo
+        si era customer_rank o supplier_rank) -->
+        <record id="res_partner_see_all_records_by_partners" model="ir.rule">
+            <field name="name">Visualizar los registros de todos los partner: de acuerdo al módulo</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="domain_force">[('create_uid.id', 'in',  user.env['res.users'].search([]).ids)]</field>
+            <field name="groups" eval="[
+            (4, ref('group_contact_visualizar_proveedores')),
+            (4, ref('group_contact_visualizar_proveedores_nacionales')),
+            (4, ref('group_contact_gestionar_proveedores')),
+            (4, ref('group_contact_visualizar_clientes')),
+            (4, ref('group_contact_gestionar_clientes'))
+            ]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Modificamos la regla res_partner_rule_private_employee para que sólo esté
+        en el grupo "Usuario Interno 2" que fue el que creamos al inicio del xml. Usamos
+        function: write para quitarle el noupdate, actualizar la regla, y luego le colocamos
+        nuevamente el noupdate True. Esto se hace con todos los records base de Odoo donde
+        data = noupdate:True -->
+        <function name="write" model="ir.model.data">
+            <function name="search" model="ir.model.data">
+                <value eval="[('module', '=', 'base'), ('name', '=', 'res_partner_rule_private_employee')]"/>
+            </function>
+            <value eval="{'noupdate': False}"/>
+        </function>
+
+        <record id="base.res_partner_rule_private_employee" model="ir.rule">
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="groups" eval="[(6, 0, [ref('group_contact_user_2')])]"/>
+        </record>
+
+        <function name="write" model="ir.model.data">
+            <function name="search" model="ir.model.data">
+                <value eval="[('module', '=', 'base'), ('name', '=', 'res_partner_rule_private_employee')]"/>
+            </function>
+            <value eval="{'noupdate': True}"/>
+        </function>
+
+        <!-- Reglas sobre sale.order y purchase.order -->
+        <!-- Para los grupos manager_customer y readonly_supplier, se les aplicará la siguiente regla
+        que será una restricción de sólo visualizar aquellas órdenes de venta cuyo partner_id = customer -->
+        <!-- Por ahora se suspenden estas reglas, no habrán restricciones sobre órdenes de ventas -->
+        <!-- <record id="sale_order_constraint_customer" model="ir.rule">
+            <field name="name">Solo: ordenes de venta de clientes</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="domain_force">[('partner_id', 'in', user.env['res.partner'].search([('customer_rank', '>', 0)]).ids)]</field>
+            <field name="groups" eval="[
+            (4, ref('group_contact_visualizar_clientes')),
+            (4, ref('group_contact_gestionar_clientes'))
+            ]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record> -->
+
+        <!-- Para los grupos manager_supplier y readonly_supplier (proveedor_internat = False/True)
+        se les aplicará las siguientes reglas donde sólo visualizarán órdenes de compra cuyo partner_id = supplier
+        (ya sea internacional o no, respectivamente) -->
+        <record id="purchase_order_constraint_supplier_nacional" model="ir.rule">
+            <field name="name">Solo: proveedores nacionales </field>
+            <field name="model_id" ref="purchase.model_purchase_order"/>
+            <field name="domain_force">[('partner_id', 'in', user.env['res.partner'].search([('supplier_rank', '>', 0), ('proveedor_internat', '=', False)]).ids)]</field>
+            <field name="groups" eval="[
+            (4, ref('group_contact_visualizar_proveedores_nacionales'))
+            ]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Por ahora se suspenden estas reglas, no habrán restricciones para proveedores internacionales y supplier_managers -->
+        <!-- <record id="purchase_order_constraint_supplier_international" model="ir.rule">
+            <field name="name">Solo: proveedores internacionales </field>
+            <field name="model_id" ref="purchase.model_purchase_order"/>
+            <field name="domain_force">[('partner_id', 'in', user.env['res.partner'].search([('supplier_rank', '>', 0), ('proveedor_internat', '=', True)]).ids)]</field>
+            <field name="groups" eval="[
+            (4, ref('group_contact_visualizar_proveedores'))
+            ]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="purchase_order_constraint_supplier" model="ir.rule">
+            <field name="name">Solo: proveedores </field>
+            <field name="model_id" ref="purchase.model_purchase_order"/>
+            <field name="domain_force">[('partner_id', 'in', user.env['res.partner'].search([('supplier_rank', '>', 0)]).ids)]</field>
+            <field name="groups" eval="[
+            (4, ref('group_contact_gestionar_proveedores'))
+            ]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record> -->
+
+    </data>
+</odoo>
