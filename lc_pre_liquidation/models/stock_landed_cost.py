@@ -99,7 +99,7 @@ class StockLandedCost(models.Model):
     )
     currency_rate_usd = fields.Float(
         string='Tasa de cambio ',
-        related='currency_id.rate',
+        related='rate',
     )
     product_detail_ids = fields.One2many(
         comodel_name='pre.stock.product.detail',

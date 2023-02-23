@@ -95,7 +95,7 @@
                             <t t-foreach="o.product_detail_ids" t-as="line_details">
                                 <tr t-att-key="line_details_index">
                                     <td name="td_product_id_dtls">
-                                        <span t-field="line_details.product_id"/>
+                                        <span t-field="line_details.description"/>
                                     </td>
                                     <td name="td_quantity_dtls">
                                         <span t-field="line_details.quantity"/>
