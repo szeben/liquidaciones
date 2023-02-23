@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+
+    <!-- Creamos 2 menús (uno para proveedors y otro para clientes), que nos ayudará
+    a usar los filtros predeterminados para cada uno respectivamente. A través de estos
+    menús, se le mostrarán sólamente a los que pertenezcan a group_supplier o group_customer.
+    Y se les aplicará el filtro por defecto de cada uno. También se les añade las opciones:
+    kanban, tree y form para que no haya choques con la plataforma -->
+    <record id="action_contacts_supplier" model="ir.actions.act_window">
+        <field name="name">Proveedores</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,tree,form,activity</field>
+        <field name="search_view_id" ref="base.view_res_partner_filter"/>
+        <field name="context">{'res_partner_search_mode': 'supplier', 'default_is_company': True, 'default_supplier_rank': 1}</field>
+        <field name="domain">[('supplier_rank', '>', 0)]</field>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Create a Contact in your address book
+          </p><p>
+            Odoo helps you track all activities related to your contacts.
+          </p>
+        </field>
+    </record>
+
+    <!-- Hubo que crear un nuevo menú para solo proveedores nacionales, ya que si se dejaba
+    el mismo de arriba para los grupos Gestionar-Visualizar/Nacionales-Internacionales,
+    los nacionales podrían ver los internacionales y no debería ser. -->
+    <record id="action_contacts_supplier_national" model="ir.actions.act_window">
+        <field name="name">Proveedores Nacionales</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,tree,form,activity</field>
+        <field name="search_view_id" ref="base.view_res_partner_filter"/>
+        <field name="context">{'res_partner_search_mode': 'supplier', 'default_is_company': True, 'default_supplier_rank': 1}</field>
+        <field name="domain">[('supplier_rank', '>', 0), ('proveedor_internat', '=', False)]</field>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Create a Contact in your address book
+          </p><p>
+            Odoo helps you track all activities related to your contacts.
+          </p>
+        </field>
+    </record>
+
+    <record id="action_contacts_customer" model="ir.actions.act_window">
+        <field name="name">Clientes</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,tree,form,activity</field>
+        <field name="search_view_id" ref="base.view_res_partner_filter"/>
+        <field name="context">{'res_partner_search_mode': 'customer', 'default_is_company': True, 'default_customer_rank': 1}</field>
+        <field name="domain">[('customer_rank', '>', 0)]</field>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Create a Contact in your address book
+          </p><p>
+            Odoo helps you track all activities related to your contacts.
+          </p>
+        </field>
+    </record>
+
+    <!-- Kanban, tree y form para las acciones creadas arriba -->
+    <record id="action_contacts_view_kanban_supplier" model="ir.actions.act_window.view">
+        <field name="sequence" eval="0"/>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="base.res_partner_kanban_view"/>
+        <field name="act_window_id" ref="action_contacts_supplier"/>
+    </record>
+    <record id="action_contacts_view_tree_supplier" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="base.view_partner_tree"/>
+        <field name="act_window_id" ref="action_contacts_supplier"/>
+    </record>
+    <record id="action_contacts_view_form_supplier" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="base.view_partner_form"/>
+        <field name="act_window_id" ref="action_contacts_supplier"/>
+    </record>
+
+    <record id="action_contacts_view_kanban_supplier" model="ir.actions.act_window.view">
+        <field name="sequence" eval="0"/>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="base.res_partner_kanban_view"/>
+        <field name="act_window_id" ref="action_contacts_supplier_national"/>
+    </record>
+    <record id="action_contacts_view_tree_supplier" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="base.view_partner_tree"/>
+        <field name="act_window_id" ref="action_contacts_supplier_national"/>
+    </record>
+    <record id="action_contacts_view_form_supplier" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="base.view_partner_form"/>
+        <field name="act_window_id" ref="action_contacts_supplier_national"/>
+    </record>
+
+    <record id="action_contacts_view_kanban_customer" model="ir.actions.act_window.view">
+        <field name="sequence" eval="0"/>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="base.res_partner_kanban_view"/>
+        <field name="act_window_id" ref="action_contacts_customer"/>
+    </record>
+    <record id="action_contacts_view_tree_customer" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="base.view_partner_tree"/>
+        <field name="act_window_id" ref="action_contacts_customer"/>
+    </record>
+    <record id="action_contacts_view_form_customer" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="base.view_partner_form"/>
+        <field name="act_window_id" ref="action_contacts_customer"/>
+    </record>
+
+    <!-- Los menús en cuestión, restrigiendo por el campo groups -->
+  
+    <menuitem id="res_partner_menu_contacts_supplier"
+        name="Proveedores"
+        action="action_contacts_supplier"
+        parent="contacts.menu_contacts"
+        sequence="2"
+        groups="contact_type_restrictions.group_contact_visualizar_proveedores,contact_type_restrictions.group_contact_gestionar_proveedores"/>
+
+    <menuitem id="res_partner_menu_contacts_supplier_national"
+        name="Proveedores Nacionales"
+        action="action_contacts_supplier_national"
+        parent="contacts.menu_contacts"
+        sequence="2"
+        groups="contact_type_restrictions.group_contact_visualizar_proveedores_nacionales"/>
+
+    <menuitem id="res_partner_menu_contacts_customer"
+        name="Clientes"
+        action="action_contacts_customer"
+        parent="contacts.menu_contacts"
+        sequence="2"
+        groups="contact_type_restrictions.group_contact_visualizar_clientes,contact_type_restrictions.group_contact_gestionar_clientes"/>
+
+    <menuitem id="res_partner_action_supplier_national"
+        name="Proveedores Nacionales"
+        action="action_contacts_supplier_national"
+        parent="purchase.menu_procurement_management"
+        sequence="15"
+        groups="contact_type_restrictions.group_contact_visualizar_proveedores_nacionales"/>
+
+    <!-- Además, le quitamos el acceso a Contactos del grupo Tipos de Usuario/Usuario Interno,
+    ya que no se puede quitar los usuarios de ese grupo. El menú se añade al grupo adicional
+    Usuario Interno 2 para que no hayan inconvenientes -->
+    <record model="ir.ui.menu" id="contacts.menu_contacts">
+      <field name="groups_id" eval="[(6, 0, [
+      ref('base.group_user'),
+      ref('base.group_partner_manager')
+      ])]"/>
+    </record>
+
+    <record model="ir.ui.menu" id="contacts.res_partner_menu_contacts">
+      <field name="groups_id" eval="[(6, 0, [
+      ref('base.group_system')
+      ])]"/>
+    </record>
+
+    <!-- Heredamos el menú root de Compra para añadir los grupos adicionales que creamos
+    para proveedores -->
+    <record model="ir.ui.menu" id="purchase.menu_purchase_root">
+      <field name="groups_id" eval="[
+      (4, ref('contact_type_restrictions.group_contact_visualizar_proveedores')),
+      (4, ref('contact_type_restrictions.group_contact_visualizar_proveedores_nacionales')),
+      (4, ref('contact_type_restrictions.group_contact_gestionar_proveedores'))
+      ]"/>
+    </record>
+
+    <!-- Se modifica el submenú Proveedores, dentro del submenú Pedidos, que está
+    dentro del menú root de Compras, ya que sólo se puede ver por el administrador de compras.
+    Se modifica a través de funciones y se le añade los grupos en cuestión. -->
+    <function name="write" model="ir.model.data">
+        <function name="search" model="ir.model.data">
+            <value eval="[('module', '=', 'purchase'), ('name', '=', 'menu_procurement_management_supplier_name')]"/>
+        </function>
+        <value eval="{'noupdate': False}"/>
+    </function>
+
+    <record model="ir.ui.menu" id="purchase.menu_procurement_management_supplier_name">
+      <field name="groups_id" eval="[
+      (4, ref('contact_type_restrictions.group_contact_visualizar_proveedores')),
+      (4, ref('contact_type_restrictions.group_contact_gestionar_proveedores'))
+      ]"/>
+    </record>
+
+    <function name="write" model="ir.model.data">
+        <function name="search" model="ir.model.data">
+            <value eval="[('module', '=', 'purchase'), ('name', '=', 'menu_procurement_management_supplier_name')]"/>
+        </function>
+        <value eval="{'noupdate': True}"/>
+    </function>
+
+    <!-- Se indica los grupos que sólamente tendrán acceso a los productos dentro de compras -->
+    <record model="ir.ui.menu" id="purchase.menu_purchase_products">
+      <field name="groups_id" eval="[(6,0,[
+      ref('purchase.group_purchase_manager'),
+      ref('purchase.group_purchase_user')
+      ])]"/>
+    </record>
+
+    <!-- También, para el menú de ventas se añade los grupos que tienen permitido ingresar
+    a este módulo, como son los grupos que visualizar y gestionar clientes. 
+    Cabe destacar que se hacen modificaciones a los menús de ventas del mismo estilo
+    que se verá a continuación ya que la mayoría de menús están restringidos por grupos.
+    En caso tal de que el usuario pertnezca a Ventas/User: Own documents only podrá acceder
+    a todos los menús. Se modifican (por ahora) root, tablero y pedidos/clientes-->
+
+    <!-- Menú root de ventas -->
+    <function name="write" model="ir.model.data">
+        <function name="search" model="ir.model.data">
+            <value eval="[('module', '=', 'sale'), ('name', '=', 'sale_menu_root')]"/>
+        </function>
+        <value eval="{'noupdate': False}"/>
+    </function>
+
+    <record model="ir.ui.menu" id="sale.sale_menu_root">
+      <field name="groups_id" eval="[
+      (4, ref('contact_type_restrictions.group_contact_visualizar_clientes')),
+      (4, ref('contact_type_restrictions.group_contact_gestionar_clientes'))
+      ]"/>
+    </record>
+
+    <function name="write" model="ir.model.data">
+        <function name="search" model="ir.model.data">
+            <value eval="[('module', '=', 'sale'), ('name', '=', 'sale_menu_root')]"/>
+        </function>
+        <value eval="{'noupdate': True}"/>
+    </function>
+
+    <!-- Submenú Ventas/Pedidos -->
+    <function name="write" model="ir.model.data">
+        <function name="search" model="ir.model.data">
+            <value eval="[('module', '=', 'sale'), ('name', '=', 'sale_order_menu')]"/>
+        </function>
+        <value eval="{'noupdate': False}"/>
+    </function>
+
+    <record model="ir.ui.menu" id="sale.sale_order_menu">
+      <field name="groups_id" eval="[
+      (4, ref('contact_type_restrictions.group_contact_visualizar_clientes')),
+      (4, ref('contact_type_restrictions.group_contact_gestionar_clientes'))
+      ]"/>
+    </record>
+
+    <function name="write" model="ir.model.data">
+        <function name="search" model="ir.model.data">
+            <value eval="[('module', '=', 'sale'), ('name', '=', 'sale_order_menu')]"/>
+        </function>
+        <value eval="{'noupdate': True}"/>
+    </function>
+
+    <!-- Sub-submenú Ventas/Pedidos/Clientes -->
+    <function name="write" model="ir.model.data">
+        <function name="search" model="ir.model.data">
+            <value eval="[('module', '=', 'sale'), ('name', '=', 'res_partner_menu')]"/>
+        </function>
+        <value eval="{'noupdate': False}"/>
+    </function>
+
+    <record model="ir.ui.menu" id="sale.res_partner_menu">
+      <field name="groups_id" eval="[
+      (4, ref('contact_type_restrictions.group_contact_visualizar_clientes')),
+      (4, ref('contact_type_restrictions.group_contact_gestionar_clientes'))
+      ]"/>
+    </record>
+
+    <function name="write" model="ir.model.data">
+        <function name="search" model="ir.model.data">
+            <value eval="[('module', '=', 'sale'), ('name', '=', 'res_partner_menu')]"/>
+        </function>
+        <value eval="{'noupdate': True}"/>
+    </function>
+
+    <!-- Sub-submenú Ventas/Pedidos/Presupuestos (para que Gestionar Clientes/Visualizar Clientes
+    puedan acceder a las órdenes de venta) -->
+    <function name="write" model="ir.model.data">
+        <function name="search" model="ir.model.data">
+            <value eval="[('module', '=', 'sale'), ('name', '=', 'menu_sale_quotations')]"/>
+        </function>
+        <value eval="{'noupdate': False}"/>
+    </function>
+
+    <record model="ir.ui.menu" id="sale.menu_sale_quotations">
+      <field name="groups_id" eval="[
+      (4, ref('contact_type_restrictions.group_contact_visualizar_clientes')),
+      (4, ref('contact_type_restrictions.group_contact_gestionar_clientes'))
+      ]"/>
+    </record>
+
+    <function name="write" model="ir.model.data">
+        <function name="search" model="ir.model.data">
+            <value eval="[('module', '=', 'sale'), ('name', '=', 'menu_sale_quotations')]"/>
+        </function>
+        <value eval="{'noupdate': True}"/>
+    </function>
+
+    <!-- Vista res_partner_property_form heredada par añadir el nuevo campo proveedor_internat -->
+    <record id="view_partner_property_form_inherited" model="ir.ui.view">
+      <field name="name">res.partner.purchase.property.form.inherit.inherited</field>
+      <field name="model">res.partner</field>
+      <!-- <field name="groups_id" eval="[(4, ref('__export__.res_groups_72_45e737e5'))]"/> -->
+      <field name="inherit_id" ref="purchase.view_partner_property_form"/>
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='property_purchase_currency_id']" position="before">
+            <field name="proveedor_internat"/>
+        </xpath>
+      </field>
+    </record>
+
+  </data>
+</odoo>
