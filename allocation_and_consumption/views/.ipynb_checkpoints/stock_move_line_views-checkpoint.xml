@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+<data>
+
+    <record model="ir.ui.view" id="view_stock_move_line_extension">
+        <field name="name">stock.move.line.extension</field>
+        <field name="model">stock.move.line</field> 
+        <field name="inherit_id" ref="stock.view_stock_move_line_detailed_operation_tree"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="field[@name='product_uom_qty']" position="before">
+                <field name="picking_seq_code" invisible="1"/>
+                <field name="hr_department_id" options="{'no_create': True, 'no_create_edit':True, 'no_open':True}" attrs="{'invisible': [('picking_seq_code', '!=', 'ASI')]}" invisible="1"/>
+                <field name="hr_employee_id" options="{'no_create': True, 'no_create_edit':True, 'no_open':True}"/>
+                <field name="fleet_vehicle_id" options="{'no_create': True, 'no_create_edit':True, 'no_open':True}"/>
+            </xpath>
+            
+
+        </field>
+    </record>     
+
+
+</data>
+</odoo>
+
+

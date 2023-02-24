@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!--secuencias-->
+        
+        <record id="caracas_sequence_con" model="ir.sequence">
+           <field name="name">INTCCS Secuencia CON</field>
+           <field name="implementation">standard</field>
+           <field name="code">CON</field>
+           <field name="active">True</field>
+           <field name="prefix">INTCCS/CON/</field>
+           <field name="padding">5</field>
+           <field name="number_next">1</field>
+           <field name="number_increment">1</field>
+        </record>
+        
+        <record id="barquisimeto_sequence_con" model="ir.sequence">
+           <field name="name">INTBRM Secuencia CON</field>
+           <field name="implementation">standard</field>
+           <field name="code">CON</field>
+           <field name="active">True</field>
+           <field name="prefix">INTBRM/CON/</field>
+           <field name="padding">5</field>
+           <field name="number_next">1</field>
+           <field name="number_increment">1</field>
+        </record>
+        
+        <record id="valencia_sequence_con" model="ir.sequence">
+           <field name="name">INTVLN Secuencia CON</field>
+           <field name="implementation">standard</field>
+           <field name="code">CON</field>
+           <field name="active">True</field>
+           <field name="prefix">INTVLN/CON/</field>
+           <field name="padding">5</field>
+           <field name="number_next">1</field>
+           <field name="number_increment">1</field>
+        </record>
+        
+        <record id="margarita_sequence_con" model="ir.sequence">
+           <field name="name">INTMGTA Secuencia CON</field>
+           <field name="implementation">standard</field>
+           <field name="code">CON</field>
+           <field name="active">True</field>
+           <field name="prefix">INTMGTA/CON/</field>
+           <field name="padding">5</field>
+           <field name="number_next">1</field>
+           <field name="number_increment">1</field>
+        </record>
+        
+        <!--asignaciones-->
+        
+    	<record model="stock.picking.type" id="consumo_caracas">
+            <field name="name">Consumo</field>
+            <field name="sequence_code">CON</field>
+            <field name="warehouse_id">266</field>
+            <field name="reservation_method">at_confirm</field>
+            <field name="code">outgoing</field>
+            <field name="show_operations">True</field>
+            <field name="show_entire_packs">False</field>
+            <field name="default_location_src_id">2615</field>
+            <field name="default_location_dest_id">653</field>
+            <field name="asignacion_y_consumo_interno">True</field>
+        </record>
+        
+    	<record model="stock.picking.type" id="consumo_barquisimeto">
+            <field name="name">Consumo</field>
+            <field name="sequence_code">CON</field>
+            <field name="warehouse_id">268</field>
+            <field name="reservation_method">at_confirm</field>
+            <field name="code">outgoing</field>
+            <field name="show_operations">True</field>
+            <field name="show_entire_packs">False</field>
+            <field name="default_location_src_id">2633</field>
+            <field name="default_location_dest_id">653</field>
+            <field name="asignacion_y_consumo_interno">True</field>
+        </record>
+        
+    	<record model="stock.picking.type" id="consumo_valencia">
+            <field name="name">Consumo</field>
+            <field name="sequence_code">CON</field>
+            <field name="warehouse_id">270</field>
+            <field name="reservation_method">at_confirm</field>
+            <field name="code">outgoing</field>
+            <field name="show_operations">True</field>
+            <field name="show_entire_packs">False</field>
+            <field name="default_location_src_id">2645</field>
+            <field name="default_location_dest_id">653</field>
+            <field name="asignacion_y_consumo_interno">True</field>
+        </record>
+        
+    	<record model="stock.picking.type" id="consumo_margarita">
+            <field name="name">Consumo</field>
+            <field name="sequence_code">CON</field>
+            <field name="warehouse_id">271</field>
+            <field name="reservation_method">at_confirm</field>
+            <field name="code">outgoing</field>
+            <field name="show_operations">True</field>
+            <field name="show_entire_packs">False</field>
+            <field name="default_location_src_id">2651</field>
+            <field name="default_location_dest_id">653</field>
+            <field name="asignacion_y_consumo_interno">True</field>
+        </record>
+        
+
+    </data>
+</odoo>

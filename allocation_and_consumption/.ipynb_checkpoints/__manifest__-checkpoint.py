@@ -21,12 +21,16 @@
     'license': 'Other proprietary',
 
     # any module necessary for this one to work correctly
-    'depends': ['base','stock'],
+    'depends': ['base','stock','branch','hr','fleet'],
 
     # always loaded
     'data': [
         'data/stock_locations.xml',
+        'data/mov_asignacion_y_consumo.xml',
+        'data/mov_asignacion.xml',
+        'data/mov_consumo.xml',
         'views/stock_pick_type_views.xml',
+        'views/stock_move_line_views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
