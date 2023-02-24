@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+    	<record model="stock.location" id="location_consumo_interno">
+            <field name="name">Consumo Interno</field>
+            <field name="usage">customer</field>
+        </record>
+    </data>
+</odoo>

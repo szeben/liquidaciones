@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+         <record id="group_asignacion_consumo_interno" model="res.groups">
+            <field name="name">Asignación y Consumo Interno</field>
+            <field name="category_id" ref="base.module_category_inventory_inventory" />
+            <field name="comment">Permite realizar asignación y consumo de materiales y equipo para uso interno. Creado por: Techne.</field>
+        </record>            
+
+     
+    </data>
+</odoo>
