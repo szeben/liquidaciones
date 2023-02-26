@@ -53,52 +53,52 @@
     	<record model="stock.picking.type" id="consumo_caracas">
             <field name="name">Consumo</field>
             <field name="sequence_code">CON</field>
-            <field name="warehouse_id">266</field>
+            <field name="warehouse_id">78</field>
             <field name="reservation_method">at_confirm</field>
             <field name="code">outgoing</field>
             <field name="show_operations">True</field>
             <field name="show_entire_packs">False</field>
-            <field name="default_location_src_id">2615</field>
-            <field name="default_location_dest_id">653</field>
+            <field name="default_location_src_id">752</field>
+            <field name="default_location_dest_id" eval="ref('allocation_and_consumption.location_consumo_interno')"/>
             <field name="asignacion_y_consumo_interno">True</field>
         </record>
         
     	<record model="stock.picking.type" id="consumo_barquisimeto">
             <field name="name">Consumo</field>
             <field name="sequence_code">CON</field>
-            <field name="warehouse_id">268</field>
+            <field name="warehouse_id">79</field>
             <field name="reservation_method">at_confirm</field>
             <field name="code">outgoing</field>
             <field name="show_operations">True</field>
             <field name="show_entire_packs">False</field>
-            <field name="default_location_src_id">2633</field>
-            <field name="default_location_dest_id">653</field>
+            <field name="default_location_src_id">758</field>
+            <field name="default_location_dest_id" eval="ref('allocation_and_consumption.location_consumo_interno')"/>
             <field name="asignacion_y_consumo_interno">True</field>
         </record>
         
     	<record model="stock.picking.type" id="consumo_valencia">
             <field name="name">Consumo</field>
             <field name="sequence_code">CON</field>
-            <field name="warehouse_id">270</field>
+            <field name="warehouse_id">80</field>
             <field name="reservation_method">at_confirm</field>
             <field name="code">outgoing</field>
             <field name="show_operations">True</field>
             <field name="show_entire_packs">False</field>
-            <field name="default_location_src_id">2645</field>
-            <field name="default_location_dest_id">653</field>
+            <field name="default_location_src_id">764</field>
+            <field name="default_location_dest_id" eval="ref('allocation_and_consumption.location_consumo_interno')"/>
             <field name="asignacion_y_consumo_interno">True</field>
         </record>
         
     	<record model="stock.picking.type" id="consumo_margarita">
             <field name="name">Consumo</field>
             <field name="sequence_code">CON</field>
-            <field name="warehouse_id">271</field>
+            <field name="warehouse_id">81</field>
             <field name="reservation_method">at_confirm</field>
             <field name="code">outgoing</field>
             <field name="show_operations">True</field>
             <field name="show_entire_packs">False</field>
-            <field name="default_location_src_id">2651</field>
-            <field name="default_location_dest_id">653</field>
+            <field name="default_location_src_id">770</field>
+            <field name="default_location_dest_id" eval="ref('allocation_and_consumption.location_consumo_interno')"/>
             <field name="asignacion_y_consumo_interno">True</field>
         </record>
         

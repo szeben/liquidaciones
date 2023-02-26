@@ -13,9 +13,38 @@
                 <field name="asignacion_y_consumo_interno"/>
             </xpath>
             
-
         </field>
-    </record>     
+    </record>   
+    
+    <record model="ir.ui.view" id="view_limit_inventory_overview_extension">
+        <field name="name">stock.picking.type.limit.overview</field>
+        <field name="model">stock.picking.type</field> 
+        <field name="inherit_id" ref="stock.stock_picking_type_kanban"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="field[@name='count_picking_backorders']" position="after">
+                <field name="asignacion_y_consumo_interno" invisible="1"/>
+            </xpath>
+
+            <xpath expr="templates/t" position="attributes">
+                <field name="attrs">{'t-if':'asignacion_y_consumo_interno'}</field>
+            </xpath>
+            
+        </field>
+    </record>       
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 
 </data>

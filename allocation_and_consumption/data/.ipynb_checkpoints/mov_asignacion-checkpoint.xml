@@ -53,52 +53,52 @@
     	<record model="stock.picking.type" id="asignacion_caracas">
             <field name="name">Asignación</field>
             <field name="sequence_code">ASI</field>
-            <field name="warehouse_id">266</field>
+            <field name="warehouse_id">78</field>
             <field name="reservation_method">at_confirm</field>
             <field name="code">internal</field>
             <field name="show_operations">True</field>
             <field name="show_entire_packs">False</field>
-            <field name="default_location_src_id">2615</field>
-            <field name="default_location_dest_id">2615</field>
+            <field name="default_location_src_id">752</field>
+            <field name="default_location_dest_id">752</field>
             <field name="asignacion_y_consumo_interno">True</field>
         </record>
         
     	<record model="stock.picking.type" id="asignacion_barquisimeto">
             <field name="name">Asignación</field>
             <field name="sequence_code">ASI</field>
-            <field name="warehouse_id">268</field>
+            <field name="warehouse_id">79</field>
             <field name="reservation_method">at_confirm</field>
             <field name="code">internal</field>
             <field name="show_operations">True</field>
             <field name="show_entire_packs">False</field>
-            <field name="default_location_src_id">2633</field>
-            <field name="default_location_dest_id">2633</field>
+            <field name="default_location_src_id">758</field>
+            <field name="default_location_dest_id">758</field>
             <field name="asignacion_y_consumo_interno">True</field>
         </record>
         
     	<record model="stock.picking.type" id="asignacion_valencia">
             <field name="name">Asignación</field>
             <field name="sequence_code">ASI</field>
-            <field name="warehouse_id">270</field>
+            <field name="warehouse_id">80</field>
             <field name="reservation_method">at_confirm</field>
             <field name="code">internal</field>
             <field name="show_operations">True</field>
             <field name="show_entire_packs">False</field>
-            <field name="default_location_src_id">2645</field>
-            <field name="default_location_dest_id">2645</field>
+            <field name="default_location_src_id">764</field>
+            <field name="default_location_dest_id">764</field>
             <field name="asignacion_y_consumo_interno">True</field>
         </record>
         
     	<record model="stock.picking.type" id="asignacion_margarita">
             <field name="name">Asignación</field>
             <field name="sequence_code">ASI</field>
-            <field name="warehouse_id">271</field>
+            <field name="warehouse_id">81</field>
             <field name="reservation_method">at_confirm</field>
             <field name="code">internal</field>
             <field name="show_operations">True</field>
             <field name="show_entire_packs">False</field>
-            <field name="default_location_src_id">2651</field>
-            <field name="default_location_dest_id">2651</field>
+            <field name="default_location_src_id">770</field>
+            <field name="default_location_dest_id">770</field>
             <field name="asignacion_y_consumo_interno">True</field>
         </record>
         

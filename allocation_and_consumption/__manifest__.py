@@ -31,6 +31,7 @@
         'data/mov_consumo.xml',
         'views/stock_pick_type_views.xml',
         'views/stock_move_line_views.xml',
+        'security/acceso_transferencias_internas.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
