@@ -218,17 +218,14 @@
                                         <t t-set="package_move_lines" t-value="o.move_line_ids.filtered(lambda l: l.result_package_id == package)" />
                                         <!-- If printing lots/serial numbers => keep products in original lines -->
                                         <t t-if="has_serial_number">
-                                            <tr t-foreach="package_move_lines" t-as="move_line">
-                                                <t t-call="personalization_tissage_documents.stock_report_delivery_move_linehas_serial_move_line_custom" />
-                                            </tr>
+                                            <t t-set="entregado_global" t-value="0" />                                            
+                                            <t t-call="personalization_tissage_documents.stock_report_delivery_has_serial_move_line_custom" />                                        
                                         </t>
                                         <!-- If not printing lots/serial numbers => merge lines with same product+description+uom -->
                                         <t t-else="">
-                                            <t t-set="entregado_global" t-value="0" />
-                                            <tr t-foreach="package_move_lines" t-as="move_line">
-                                                <t t-set="aggregated_lines" t-value="package_move_lines._get_aggregated_product_quantities()" />
-                                                <t t-call="personalization_tissage_documents.stock_report_delivery_aggregated_move_lines_custom" />
-                                            </tr>
+                                            <t t-set="entregado_global" t-value="0" />                                            
+                                            <t t-set="aggregated_lines" t-value="package_move_lines._get_aggregated_product_quantities()" />
+                                            <t t-call="personalization_tissage_documents.stock_report_delivery_aggregated_move_lines_custom" />                                            
                                         </t>
                                     </t>
                                     <!-- Make sure we do another section for package-less products if they exist -->
@@ -272,10 +269,8 @@
                                         <t t-else="">
                                             <t t-set="aggregated_lines" t-value="move_lines._get_aggregated_product_quantities()" />
                                             <t t-if="aggregated_lines">
-                                                <t t-set="entregado_global" t-value="0" />
-                                                <tr t-foreach="move_lines" t-as="move_line">
-                                                    <t t-call="personalization_tissage_documents.stock_report_delivery_aggregated_move_lines_custom" />
-                                                </tr>
+                                                <t t-set="entregado_global" t-value="0" />                                               
+                                                <t t-call="personalization_tissage_documents.stock_report_delivery_aggregated_move_lines_custom" />                                               
                                             </t>
                                         </t>
                                     </t>
@@ -323,10 +318,8 @@
                                     <!-- If not printing lots/serial numbers => merge lines with same product -->
                                     <t t-else="" name="aggregated_move_lines">
                                         <t t-set="aggregated_lines" t-value="o.move_line_ids._get_aggregated_product_quantities()" />
-                                        <t t-set="entregado_global" t-value="0" />
-                                        <tr t-foreach="o.move_line_ids" t-as="move_line">
-                                            <t t-call="personalization_tissage_documents.stock_report_delivery_aggregated_move_lines_custom" />
-                                        </tr>
+                                        <t t-set="entregado_global" t-value="0" />                                        
+                                        <t t-call="personalization_tissage_documents.stock_report_delivery_aggregated_move_lines_custom" />                                    
                                     </t>
                                 </t>
                             </tbody>
@@ -452,23 +445,24 @@
         <!-- templates for easier extension + cut back on repeat code due to multiple conditionals -->
         <!-- move line(s) printing for tables -->
         <template id="stock_report_delivery_has_serial_move_line_custom">
-            <td>
-                <span t-field="move_line.product_id.default_code" />
-
-            </td>
-            <td>
-                <span t-field="move_line.product_id.name" />
-            </td>
-            <t t-if="has_serial_number" name="move_line_lot">
+            <tr t-foreach="package_move_lines" t-as="move_line">
                 <td>
-                    <span t-field="move_line.lot_id.name" />
+                    <span t-field="move_line.product_id.default_code" />
                 </td>
-            </t>
-            <td class="text-center" name="move_line_lot_qty_done">
-                <span t-field="move_line.qty_done" />
-                <span t-field="move_line.product_uom_id" />
-                <t t-set="entregado_global" t-value="entregado_global + move_line.qty_done" />
-            </td>
+                <td>
+                    <span t-field="move_line.product_id.name" />
+                </td>
+                <t t-if="has_serial_number" name="move_line_lot">
+                    <td>
+                        <span t-field="move_line.lot_id.name" />
+                    </td>
+                </t>
+                <td class="text-center" name="move_line_lot_qty_done">
+                    <span t-field="move_line.qty_done" />
+                    <span t-field="move_line.product_uom_id" />
+                    <t t-set="entregado_global" t-value="entregado_global + move_line.qty_done" />
+                </td>
+            </tr>
             <tr>
                 <th colspan="4" style="border:1px solid black; border-style: solid none solid none; text-align:left;">
 
@@ -479,10 +473,7 @@
             </tr>
         </template>
 
-        <template id="stock_report_delivery_aggregated_move_lines_custom">
-
-
-            <!-- <t t-set="entregado_global" t-value="0" /> -->
+        <template id="stock_report_delivery_aggregated_move_lines_custom">               
 
             <tr t-foreach="aggregated_lines" t-as="line">
                 <td>
