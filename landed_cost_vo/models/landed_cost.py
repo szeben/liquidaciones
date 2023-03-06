@@ -71,13 +71,16 @@ class StockLandedCost(models.Model):
 
             additional_cost = line.additional_landed_cost / line.quantity
 
-            if line.product_id.id not in details[line.picking_id]:
+            product_id = line.product_id.id
+            picking_id = line.picking_id.id
+
+            if product_id not in details[picking_id]:
                 value = line.former_cost / line.quantity
 
-                details[line.picking_id][line.product_id] = {
+                details[picking_id][product_id] = {
                     'name': self.name,
                     'landed_cost_id': self.id,
-                    'product_id': line.product_id.id,
+                    'product_id': product_id,
                     'quantity': line.quantity,
                     'actual_cost': value,
                     'additional_cost': additional_cost,
@@ -85,8 +88,8 @@ class StockLandedCost(models.Model):
                 }
 
             else:
-                details[line.picking_id][line.product_id]['additional_cost'] += additional_cost
-                details[line.picking_id][line.product_id]['new_cost'] += additional_cost
+                details[picking_id][product_id]['additional_cost'] += additional_cost
+                details[picking_id][product_id]['new_cost'] += additional_cost
 
         for data_pickinds in details.values():
             for data_product in data_pickinds.values():
